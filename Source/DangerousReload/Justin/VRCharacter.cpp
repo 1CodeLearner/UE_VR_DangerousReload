@@ -6,6 +6,8 @@
 #include "Camera/CameraComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/TextRenderComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "EnhancedInputComponent.h"
 
 // Sets default values
 AVRCharacter::AVRCharacter()
@@ -23,24 +25,32 @@ AVRCharacter::AVRCharacter()
 	LMotionComp->SetupAttachment(RootComponent);
 	LHandSKMComp = CreateDefaultSubobject<USkeletalMeshComponent>("LHandSMComp");
 	LHandSKMComp->SetupAttachment(LMotionComp);
-	
 
-	RMotionComp = CreateDefaultSubobject<UMotionControllerComponent>("LMotionComp");
+	RMotionComp = CreateDefaultSubobject<UMotionControllerComponent>("RMotionComp");
 	RMotionComp->SetupAttachment(RootComponent);
 	RHandSKMComp = CreateDefaultSubobject<USkeletalMeshComponent>("RHandSMComp");
 	RHandSKMComp->SetupAttachment(RMotionComp);
 
-
 	LTextComp = CreateDefaultSubobject<UTextRenderComponent>("LTextComp");
 	LTextComp->SetupAttachment(LMotionComp);
 
-	RTextComp =  
+	RTextComp =  CreateDefaultSubobject<UTextRenderComponent>("RTextComp");
+	RTextComp->SetupAttachment(RMotionComp);
 }
 
 // Called when the game starts or when spawned
 void AVRCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	auto PC = GetController<APlayerController>();
+
+	UEnhancedInputLocalPlayerSubsystem* EnhancedInput =  ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
+
+	if(ensure(IMC_VRCharacter))
+	{
+		EnhancedInput->AddMappingContext(IMC_VRCharacter, 0);
+	}
 }
 
 // Called every frame
@@ -55,5 +65,15 @@ void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	auto EnhancedInput = Cast<UEnhancedInputComponent>(PlayerInputComponent);
+	EnhancedInput->BindAction(IA_RHandGripPress, ETriggerEvent::Started, this, &AVRCharacter::OnRightGrip);
+}
+
+void AVRCharacter::OnRightGrip(const FInputActionValue& Value)
+{
+	FString Output;
+	Output = Value.Get<bool>() ? TEXT("Good") : TEXT("Bad");
+
+	RTextComp->SetText(FText::FromString(FString::Printf(TEXT("What"))));
 }
 

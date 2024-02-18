@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "InputActionValue.h"
 #include "VRCharacter.generated.h"
 
 class UCameraComponent;
@@ -27,24 +28,30 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly, Category = "MySettings | Components")
+	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
 	TObjectPtr<UCameraComponent> CameraComp;
-	UPROPERTY(EditDefaultsOnly, Category = "MySettings | Components")
+	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
 	TObjectPtr<UStaticMeshComponent> HeadSMComp;
 
-	UPROPERTY(EditDefaultsOnly, Category = "MySettings | Components")
+	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
 	TObjectPtr<UMotionControllerComponent> LMotionComp;	
-	UPROPERTY(EditDefaultsOnly, Category = "MySettings | Components")
+	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
 	TObjectPtr<UMotionControllerComponent> RMotionComp;
-	UPROPERTY(EditDefaultsOnly, Category = "MySettings | Components")
+	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
 	TObjectPtr<USkeletalMeshComponent>  RHandSKMComp;
-	UPROPERTY(EditDefaultsOnly, Category = "MySettings | Components")
+	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
 	TObjectPtr<USkeletalMeshComponent>  LHandSKMComp;
 
-	UPROPERTY(VisibleAnywhere, Category = "MySettings | Components")
+	UPROPERTY(VisibleAnywhere, Category = "VRSettings | Components")
 	UTextRenderComponent* LTextComp;
-	UPROPERTY(VisibleAnywhere, Category = "MySettings | Components")
+	UPROPERTY(VisibleAnywhere, Category = "VRSettings | Components")
 	UTextRenderComponent* RTextComp;
+
+	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Input")
+	TObjectPtr<UInputMappingContext> IMC_VRCharacter;
+
+	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Input")
+	TObjectPtr<UInputAction> IA_RHandGripPress;
 
 
 public:
@@ -54,4 +61,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+protected:
+	UFUNCTION()
+	void OnRightGrip(const FInputActionValue& Value);
 };
