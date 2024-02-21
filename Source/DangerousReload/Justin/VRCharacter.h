@@ -14,6 +14,7 @@ class USkeletalMeshComponent;
 class UTextRenderComponent;
 class UInputMappingContext;
 class UInputAction;
+class USphereComponent;
 
 UCLASS()
 class DANGEROUSRELOAD_API AVRCharacter : public ACharacter
@@ -23,30 +24,39 @@ class DANGEROUSRELOAD_API AVRCharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	AVRCharacter();
+	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
+	TObjectPtr<UMotionControllerComponent> RMotionComp;
+
+	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
+	TObjectPtr<UMotionControllerComponent> LMotionComp;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	//Head
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
 	TObjectPtr<UCameraComponent> CameraComp;
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
 	TObjectPtr<UStaticMeshComponent> HeadSMComp;
 
-	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
-	TObjectPtr<UMotionControllerComponent> LMotionComp;	
-	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
-	TObjectPtr<UMotionControllerComponent> RMotionComp;
+	//RightHand
+
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
 	TObjectPtr<USkeletalMeshComponent>  RHandSKMComp;
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
-	TObjectPtr<USkeletalMeshComponent>  LHandSKMComp;
-
-	UPROPERTY(VisibleAnywhere, Category = "VRSettings | Components")
-	UTextRenderComponent* LTextComp;
+	TObjectPtr<USphereComponent> RCollisionComp;
 	UPROPERTY(VisibleAnywhere, Category = "VRSettings | Components")
 	UTextRenderComponent* RTextComp;
 
+	//LeftHand
+
+	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
+	TObjectPtr<USkeletalMeshComponent>  LHandSKMComp;
+	UPROPERTY(VisibleAnywhere, Category = "VRSettings | Components")
+	UTextRenderComponent* LTextComp;
+
+	//Inputs
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Input")
 	TObjectPtr<UInputMappingContext> IMC_VRCharacter;
 
@@ -64,4 +74,7 @@ public:
 protected:
 	UFUNCTION()
 	void OnRightGrip(const FInputActionValue& Value);
+private:
+	bool bIsGripping;
+	AActor* RInteractingActor;
 };
