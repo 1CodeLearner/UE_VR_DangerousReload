@@ -7,7 +7,7 @@
 #include "../VRInteractInterface.h"
 #include "VRInteractableActor.generated.h"
 
-class USceneComponent;
+class UBoxComponent;
 class UStaticMeshComponent;
 
 UCLASS()
@@ -26,8 +26,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	/*UPROPERTY(EditDefaultsOnly, Category = "Interactable")
-	TObjectPtr<USceneComponent> GrabbableComponent;*/
+	UPROPERTY(EditDefaultsOnly, Category = "Interactable")
+	TObjectPtr<UBoxComponent> GrabbableBoxComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Interactable")
 	TObjectPtr<UStaticMeshComponent> SMComp;

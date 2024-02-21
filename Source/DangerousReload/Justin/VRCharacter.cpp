@@ -29,6 +29,8 @@ AVRCharacter::AVRCharacter()
 	LMotionComp->SetupAttachment(RootComponent);
 	LHandSKMComp = CreateDefaultSubobject<USkeletalMeshComponent>("LHandSMComp");
 	LHandSKMComp->SetupAttachment(LMotionComp);
+	LHandSKMComp->SetCollisionObjectType(ECC_GameTraceChannel2);
+
 
 	LTextComp = CreateDefaultSubobject<UTextRenderComponent>("LTextComp");
 	LTextComp->SetupAttachment(LMotionComp);
@@ -38,6 +40,7 @@ AVRCharacter::AVRCharacter()
 	RMotionComp->SetupAttachment(RootComponent);
 	RHandSKMComp = CreateDefaultSubobject<USkeletalMeshComponent>("RHandSMComp");
 	RHandSKMComp->SetupAttachment(RMotionComp);
+	RHandSKMComp->SetCollisionObjectType(ECC_GameTraceChannel2);
 
 	RTextComp = CreateDefaultSubobject<UTextRenderComponent>("RTextComp");
 	RTextComp->SetupAttachment(RMotionComp);
