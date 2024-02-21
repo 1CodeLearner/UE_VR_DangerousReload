@@ -130,10 +130,25 @@ void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	EnhancedInput->BindAction(IA_RHandGripPress, ETriggerEvent::Started, this, &AVRCharacter::OnRightGrip);
 	EnhancedInput->BindAction(IA_RHandGripPress, ETriggerEvent::Completed, this, &AVRCharacter::OnRightGrip);
 
+	EnhancedInput->BindAction(IA_RHandTriggerPress, ETriggerEvent::Started, this, &AVRCharacter::OnRightTrigger);
+
 }
 
 void AVRCharacter::OnRightGrip(const FInputActionValue& Value)
 {
 	bIsGripping = Value.Get<bool>();
+}
+
+void AVRCharacter::OnRightTrigger(const FInputActionValue& Value)
+{
+	if (bIsGripping && RInteractingActor)
+	{
+		auto temp = Cast<IVRInteractInterface>(RInteractingActor);
+		if (temp)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s(%d) - OnRightTrigger Input"), *FString(__FUNCTION__), __LINE__);
+			temp->OnInteract(this);
+		}
+	}
 }
 

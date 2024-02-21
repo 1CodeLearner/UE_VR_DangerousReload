@@ -30,7 +30,7 @@ protected:
 	TObjectPtr<UBoxComponent> GrabbableBoxComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Interactable")
-	TObjectPtr<UStaticMeshComponent> SMComp;
+	TObjectPtr<USkeletalMeshComponent> SKMComp;
 
 public:
 	// Called every frame

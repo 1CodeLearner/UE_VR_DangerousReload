@@ -26,12 +26,12 @@ AVRInteractableActor::AVRInteractableActor()
 	GrabbableBoxComponent->SetSimulatePhysics(true);
 	GrabbableBoxComponent->SetEnableGravity(true);
 
-	SMComp = CreateDefaultSubobject<UStaticMeshComponent>("SMComp");
-	SMComp->SetupAttachment(RootComponent);
+	SKMComp = CreateDefaultSubobject<USkeletalMeshComponent>("SKMComp");
+	SKMComp->SetupAttachment(RootComponent);
 
-	SMComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	SMComp->SetRelativeLocation(FVector(0.0, 0.0, -50));
-	SMComp->SetSimulatePhysics(false);
+	SKMComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SKMComp->SetRelativeLocation(FVector(0.0, 0.0, -50));
+	SKMComp->SetSimulatePhysics(false);
 }
 
 void AVRInteractableActor::OnPickup(AActor* InstigatorA)

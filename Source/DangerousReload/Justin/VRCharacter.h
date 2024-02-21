@@ -30,7 +30,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
 	TObjectPtr<UMotionControllerComponent> LMotionComp;
 
-		UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
+	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
 	TObjectPtr<USkeletalMeshComponent>  RHandSKMComp;
 
 protected:
@@ -65,6 +65,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Input")
 	TObjectPtr<UInputAction> IA_RHandGripPress;
 
+	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Input")
+	TObjectPtr<UInputAction> IA_RHandTriggerPress;
 
 public:
 	// Called every frame
@@ -76,6 +78,10 @@ public:
 protected:
 	UFUNCTION()
 	void OnRightGrip(const FInputActionValue& Value);
+
+	UFUNCTION()
+	void OnRightTrigger(const FInputActionValue& Value);
+
 private:
 	bool bIsGripping;
 	AActor* RInteractingActor;
