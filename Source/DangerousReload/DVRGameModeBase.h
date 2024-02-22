@@ -13,5 +13,8 @@ UCLASS()
 class DANGEROUSRELOAD_API ADVRGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
-	
+
+public:
+	bool isPlayerTurn = false;
+	float bulletCount;
 };
