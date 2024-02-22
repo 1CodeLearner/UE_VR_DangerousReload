@@ -3,6 +3,7 @@
 
 #include "CEnemy.h"
 #include <Components/SphereComponent.h>
+#include "../DVRGameModeBase.h"
 
 // Sets default values
 ACEnemy::ACEnemy()
@@ -45,7 +46,6 @@ ACEnemy::ACEnemy()
 		leftComp->SetSkeletalMesh(tempLeftHandMesh.Object);
 	}
 
-	gameMode = Cast<ADVRGameModeBase>(GetWorld()->GetAuthGameMode());
 
 }
 
@@ -55,6 +55,8 @@ void ACEnemy::BeginPlay()
 	Super::BeginPlay();
 	currBulletCount = gameMode->bulletCount;
 	fakeBulletCount = currBulletCount / 2;
+
+	gameMode = Cast<ADVRGameModeBase>(GetWorld()->GetAuthGameMode());
 }
 
 // Called every frame

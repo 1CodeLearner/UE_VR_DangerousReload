@@ -3,6 +3,25 @@
 
 #include "VRInteractableActor_Pistol.h"
 
+AVRInteractableActor_Pistol::AVRInteractableActor_Pistol()
+{
+	bCanFire = false;
+}
+
+void AVRInteractableActor_Pistol::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+void AVRInteractableActor_Pistol::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	if (GetOwner()) 
+	{
+		CheckCanFire();
+	}
+}
+
 void AVRInteractableActor_Pistol::OnPickup(AActor* InstigatorA)
 {
 	Super::OnPickup(InstigatorA);
@@ -18,23 +37,50 @@ void AVRInteractableActor_Pistol::OnInteract(AActor* InstigatorA)
 	Super::OnInteract(InstigatorA);
 	if (SKMComp)
 	{
-		//Test What gets printed Out!!!
-		SKMComp->PlayAnimation(FireSequenceAnim, false);
-		UE_LOG(LogTemp, Warning, TEXT("Owner: %s"), *GetNameSafe(GetOwner()));
-		UE_LOG(LogTemp, Warning, TEXT("GetAttachParent: %s"), *GetNameSafe(GetOwner()));
+		if (bCanFire)
+		{
+			SKMComp->PlayAnimation(FireSequenceAnim, false);
+		}
 	}
 }
 
-bool AVRInteractableActor_Pistol::CanFire() const
+void AVRInteractableActor_Pistol::CheckCanFire()
 {
-	return false;
-	//FHitResult Hit;
-	//FVector Start = GetActorLocation();
-	//FVector End = Start + GetActorForwardVector() * 10000.f;
-	//FCollisionQueryParams Params;
-	//Params.AddIgnoredActor()
-	//FCollisionObjectQueryParams ObjectParams;
+	FVector Start = GetActorLocation();
+	FVector End = Start + GetActorRightVector() * 20000.f;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
 
-	//GetWorld()->LineTraceSingleByObjectType(Hit, GetActorLocation(), );
+	//Check if Pistol is aiming at participant
+	FCollisionObjectQueryParams GameTraceParams;
+	GameTraceParams.AddObjectTypesToQuery(ECC_GameTraceChannel3);
+	FHitResult PartiHit;
+	FCollisionShape	Shape;
+	Shape.MakeSphere(24.f);
+
+	bool bParticipantHit = GetWorld()->LineTraceSingleByObjectType(PartiHit, Start, End, ECC_GameTraceChannel3, Params);
+
+	if (bParticipantHit)
+	{
+		//Check if any objects are blocking Pistol's line of fire
+		FCollisionObjectQueryParams VisibilityParams;
+		VisibilityParams.AddObjectTypesToQuery(ECC_Visibility);
+		FHitResult VisiHit;
+
+		bool bVisibilityHit = GetWorld()->LineTraceSingleByChannel(VisiHit, Start, PartiHit.ImpactPoint, ECC_Visibility, Params);
+
+		if (!bVisibilityHit)
+		{
+			bCanFire = true;
+			DrawDebugSphere(GetWorld(), PartiHit.ImpactPoint, 6.f, 24, FColor::Red, false, 1.f);
+			return;	
+		}
+		else {
+			DrawDebugSphere(GetWorld(), VisiHit.ImpactPoint, 6.f, 24, FColor::Blue, false, 1.f);
+		}
+	}
+
+	bCanFire = false;
+	DrawDebugLine(GetWorld(), Start, End, FColor::Blue, false, 2.f);
 
 }

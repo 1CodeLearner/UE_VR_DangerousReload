@@ -9,7 +9,10 @@
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "Components/SphereComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "../VRInteractInterface.h"
+#include "HeadMountedDisplayFunctionLibrary.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AVRCharacter::AVRCharacter()
@@ -49,6 +52,10 @@ AVRCharacter::AVRCharacter()
 	RCollisionComp = CreateDefaultSubobject<USphereComponent>("RInteractSphereComp");
 	RCollisionComp->SetupAttachment(RMotionComp);
 	bIsGripping = false;
+
+	auto Capsule = GetCapsuleComponent();
+	Capsule->SetCollisionObjectType(ECC_GameTraceChannel3);
+	GetCharacterMovement()->GravityScale = 0.f;
 }
 
 // Called when the game starts or when spawned
@@ -64,6 +71,9 @@ void AVRCharacter::BeginPlay()
 	{
 		EnhancedInput->AddMappingContext(IMC_VRCharacter, 0);
 	}
+
+
+	UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Floor);
 }
 
 // Called every frame
