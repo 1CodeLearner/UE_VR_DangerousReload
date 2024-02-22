@@ -3,7 +3,7 @@
 
 #include "VRInteractableActor.h"
 #include "VRInteractableActor.h"
-#include "VRCharacter.h"
+#include "../VRCharacter.h"
 #include "Components/BoxComponent.h"
 
 

@@ -18,12 +18,9 @@ class DANGEROUSRELOAD_API AVRInteractableActor_Pistol : public AVRInteractableAc
 	virtual void OnRelease(AActor* InstigatorA) override;
 	virtual void OnInteract(AActor* InstigatorA) override;
 protected:
-	
-
-protected:
-	UPROPERTY(EditDefaultsOnly, Category = "Pistol")
-	TObjectPtr<UAnimMontage> FireMontage;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Pistol")
 	TObjectPtr<UAnimSequence> FireSequenceAnim;
+
+private:
+	bool CanFire() const;
 };

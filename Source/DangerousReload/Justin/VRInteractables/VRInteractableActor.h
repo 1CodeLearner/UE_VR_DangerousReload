@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "../VRInteractInterface.h"
+#include "../../VRInteractInterface.h"
 #include "VRInteractableActor.generated.h"
 
 class UBoxComponent;
