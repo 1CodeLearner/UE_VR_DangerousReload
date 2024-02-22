@@ -44,6 +44,8 @@ void AVRInteractableActor::OnPickup(AActor* InstigatorA)
 
 	auto VRCharacter = Cast<AVRCharacter>(InstigatorA);
 	AttachToComponent(VRCharacter->RHandSKMComp, FAttachmentTransformRules::KeepWorldTransform);
+
+	SetOwner(InstigatorA);
 }
 
 
@@ -56,6 +58,8 @@ void AVRInteractableActor::OnRelease(AActor* InstigatorA)
 	FDetachmentTransformRules Rule = FDetachmentTransformRules::KeepWorldTransform;
 	DetachFromActor(Rule);
 	GrabbableBoxComponent->SetSimulatePhysics(true);
+
+	SetOwner(nullptr);
 }
 
 void AVRInteractableActor::OnInteract(AActor* InstigatorA)

@@ -13,6 +13,11 @@ UCLASS()
 class DANGEROUSRELOAD_API AVRInteractableActor_Pistol : public AVRInteractableActor
 {
 	GENERATED_BODY()
+public:
+	AVRInteractableActor_Pistol();
+	virtual void BeginPlay() override;
+
+	virtual void Tick(float DeltaTime) override;
 
 	virtual void OnPickup(AActor* InstigatorA) override;
 	virtual void OnRelease(AActor* InstigatorA) override;
@@ -22,5 +27,7 @@ protected:
 	TObjectPtr<UAnimSequence> FireSequenceAnim;
 
 private:
-	bool CanFire() const;
+	
+	void CheckCanFire();
+	bool bCanFire;
 };

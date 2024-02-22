@@ -9,6 +9,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "Components/SphereComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "../VRInteractInterface.h"
 
 // Sets default values
@@ -49,6 +50,9 @@ AVRCharacter::AVRCharacter()
 	RCollisionComp = CreateDefaultSubobject<USphereComponent>("RInteractSphereComp");
 	RCollisionComp->SetupAttachment(RMotionComp);
 	bIsGripping = false;
+
+	GetCapsuleComponent()->SetCollisionObjectType(ECC_GameTraceChannel3);
+	
 }
 
 // Called when the game starts or when spawned
