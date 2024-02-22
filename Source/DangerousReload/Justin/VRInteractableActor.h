@@ -22,6 +22,8 @@ public:
 	virtual void OnRelease(AActor* InstigatorA) override;
 	virtual void OnInteract(AActor* InstigatorA) override;
 
+	class ADVRGameModeBase* gameMode;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

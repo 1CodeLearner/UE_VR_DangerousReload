@@ -4,6 +4,7 @@
 #include "VRInteractableActor.h"
 #include "VRInteractableActor.h"
 #include "VRCharacter.h"
+#include "../DVRGameModeBase.h"
 
 
 static TAutoConsoleVariable<bool> CVarTestPhysics(TEXT("jk.TogglePhysics"), true, TEXT("Toggle Test Physics for Interactable objects"), ECVF_Cheat);
@@ -56,6 +57,7 @@ void AVRInteractableActor::OnInteract(AActor* InstigatorA)
 void AVRInteractableActor::BeginPlay()
 {
 	Super::BeginPlay();
+	gameMode = Cast<ADVRGameModeBase>(GetWorld()->GetAuthGameMode());
 }
 
 // Called every frame

@@ -3,6 +3,10 @@
 
 #include "CEnemy.h"
 #include <Components/SphereComponent.h>
+#include "../DVRGameModeBase.h"
+#include "../Justin/VRInteractableActor.h"
+#include <../../../../../../../Source/Runtime/Engine/Classes/Kismet/GameplayStatics.h>
+#include "../../../../KasanKDT_VR/Source/KDT_VR/Public/VRPlayer.h"
 
 // Sets default values
 ACEnemy::ACEnemy()
@@ -16,6 +20,7 @@ ACEnemy::ACEnemy()
 	meshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Static Mesh Component"));
 	meshComp->SetupAttachment(RootComponent);
 	meshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	meshComp->SetRelativeRotation(FRotator(0, -90, 0));
 
 	ConstructorHelpers::FObjectFinder<UStaticMesh> tempMesh(TEXT("/Script/Engine.StaticMesh'/Engine/EngineMeshes/Cylinder.Cylinder'"));
 	if (tempMesh.Succeeded())
@@ -26,7 +31,8 @@ ACEnemy::ACEnemy()
 	// right hand
 	rightComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Right Hand"));
 	rightComp->SetupAttachment(RootComponent);
-	rightComp->SetRelativeLocation(FVector(30, -50, 0));
+	rightComp->SetRelativeLocation(FVector(70, 20, -10));
+	rightComp->SetRelativeRotation(FRotator(0, -90, 0));
 
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> tempRightHandMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/MannequinsXR/Meshes/SKM_MannyXR_right.SKM_MannyXR_right'"));
 	if (tempRightHandMesh.Succeeded())
@@ -37,7 +43,8 @@ ACEnemy::ACEnemy()
 	// left hand
 	leftComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Left Hand"));
 	leftComp->SetupAttachment(RootComponent);
-	leftComp->SetRelativeLocation(FVector(-30, -50, 0));
+	leftComp->SetRelativeLocation(FVector(70, -20, -10));
+	leftComp->SetRelativeRotation(FRotator(0, -90, 0));
 
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> tempLeftHandMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/MannequinsXR/Meshes/SKM_MannyXR_left.SKM_MannyXR_left'"));
 	if (tempLeftHandMesh.Succeeded())
@@ -45,8 +52,13 @@ ACEnemy::ACEnemy()
 		leftComp->SetSkeletalMesh(tempLeftHandMesh.Object);
 	}
 
-	gameMode = Cast<ADVRGameModeBase>(GetWorld()->GetAuthGameMode());
-
+	ConstructorHelpers::FObjectFinder<UMaterial> tempMat(TEXT("/Script/Engine.Material'/Engine/ArtTools/RenderToTexture/Materials/Debug/M_BaseColor_Constant.M_BaseColor_Constant'"));
+	if (tempMat.Succeeded())
+	{
+		meshComp->SetMaterial(0, tempMat.Object);
+		rightComp->SetMaterial(0, tempMat.Object);
+		leftComp->SetMaterial(0, tempMat.Object);
+	}
 }
 
 // Called when the game starts or when spawned
@@ -55,6 +67,10 @@ void ACEnemy::BeginPlay()
 	Super::BeginPlay();
 	currBulletCount = gameMode->bulletCount;
 	fakeBulletCount = currBulletCount / 2;
+	gameMode = Cast<ADVRGameModeBase>(GetWorld()->GetAuthGameMode());
+	player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	gun = Cast<AVRInteractableActor>(UGameplayStatics::GetActorOfClass(GetWorld(), AVRInteractableActor::StaticClass()));
+
 }
 
 // Called every frame
@@ -71,6 +87,7 @@ void ACEnemy::Tick(float DeltaTime)
 		if (succeedPercent >= 70)
 		{
 			// shoot to me
+			Shoot(this);
 		}
 		else
 		{
@@ -78,6 +95,7 @@ void ACEnemy::Tick(float DeltaTime)
 			// use check item
 			//	if next bullet is fake
 			//		shoot to me
+			//		Shoot(this);
 			//	else
 			//		shoot to player
 			// else if have knife item and player life > 1
@@ -110,5 +128,52 @@ void ACEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void ACEnemy::MoveToGun()
+{
+	rightComp->SetWorldLocation(gun->GetActorLocation().GetSafeNormal());
+	FHitResult hitInfo;
+	FVector pos = rightComp->GetComponentLocation();
+	FCollisionObjectQueryParams objectParams;
+	//objectParams.AddObjectTypesToQuery(ECollisionChannel::ECC_GameTraceChannel1);
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(this);
+	//params.AddIgnoredActor(table);
+
+	bool bChecked = GetWorld()->SweepSingleByObjectType(hitInfo, pos, pos, FQuat::Identity, objectParams, FCollisionShape::MakeSphere(20), params);
+
+	if (bChecked) {
+		currentObject = Cast<AVRInteractableActor>(hitInfo.GetActor());
+		if (currentObject != nullptr)
+		{
+			// grab
+		}
+	}
+}
+
+void ACEnemy::ReturnToBody(ACharacter* target)
+{
+	rightComp->SetRelativeLocation(FVector(0, 20, 0).GetSafeNormal());
+	if (rightComp->GetRelativeLocation() == FVector(0, 20, 0))
+	{
+	}
+}
+
+void ACEnemy::Shoot(ACharacter* target)
+{
+	if (currentObject == nullptr)
+	{
+		MoveToGun();
+	}
+	else {
+		ReturnToBody(target);
+	}
+}
+
+void ACEnemy::ShotGun(ACharacter* target)
+{
+	rightComp->SetRelativeRotation(FRotator(target->GetActorRotation().Yaw, target->GetActorRotation().Roll * -1, target->GetActorRotation().Pitch));
+	// gun->shoot
 }
 

@@ -39,8 +39,17 @@ public:
 	class USkeletalMeshComponent* leftComp;
 
 	class ADVRGameModeBase* gameMode;
+	class AVRInteractableActor* gun;
 	float currBulletCount;
 	float fakeBulletCount;
 	float life = 4;
+	class AVRInteractableActor* currentObject;
+	class ACharacter* player;
+
+public:
+	void MoveToGun();
+	void ReturnToBody(ACharacter* target);
+	void Shoot(ACharacter* target);
+	void ShotGun(ACharacter* target);
 
 };
