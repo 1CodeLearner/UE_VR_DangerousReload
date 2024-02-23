@@ -30,6 +30,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
 	TObjectPtr<UMotionControllerComponent> LMotionComp;
 
+	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
+	TObjectPtr<USkeletalMeshComponent>  RHandSKMComp;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -42,8 +45,7 @@ protected:
 
 	//RightHand
 
-	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
-	TObjectPtr<USkeletalMeshComponent>  RHandSKMComp;
+
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
 	TObjectPtr<USphereComponent> RCollisionComp;
 	UPROPERTY(VisibleAnywhere, Category = "VRSettings | Components")
@@ -63,6 +65,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Input")
 	TObjectPtr<UInputAction> IA_RHandGripPress;
 
+	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Input")
+	TObjectPtr<UInputAction> IA_RHandTriggerPress;
 
 public:
 	// Called every frame
@@ -74,7 +78,12 @@ public:
 protected:
 	UFUNCTION()
 	void OnRightGrip(const FInputActionValue& Value);
+
+	UFUNCTION()
+	void OnRightTrigger(const FInputActionValue& Value);
+
 private:
 	bool bIsGripping;
 	AActor* RInteractingActor;
+	void CheckGrabObject();
 };

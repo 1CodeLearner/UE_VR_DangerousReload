@@ -9,7 +9,10 @@
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "Components/SphereComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "../VRInteractInterface.h"
+#include "HeadMountedDisplayFunctionLibrary.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AVRCharacter::AVRCharacter()
@@ -29,6 +32,8 @@ AVRCharacter::AVRCharacter()
 	LMotionComp->SetupAttachment(RootComponent);
 	LHandSKMComp = CreateDefaultSubobject<USkeletalMeshComponent>("LHandSMComp");
 	LHandSKMComp->SetupAttachment(LMotionComp);
+	LHandSKMComp->SetCollisionObjectType(ECC_GameTraceChannel2);
+
 
 	LTextComp = CreateDefaultSubobject<UTextRenderComponent>("LTextComp");
 	LTextComp->SetupAttachment(LMotionComp);
@@ -38,6 +43,7 @@ AVRCharacter::AVRCharacter()
 	RMotionComp->SetupAttachment(RootComponent);
 	RHandSKMComp = CreateDefaultSubobject<USkeletalMeshComponent>("RHandSMComp");
 	RHandSKMComp->SetupAttachment(RMotionComp);
+	RHandSKMComp->SetCollisionObjectType(ECC_GameTraceChannel2);
 
 	RTextComp = CreateDefaultSubobject<UTextRenderComponent>("RTextComp");
 	RTextComp->SetupAttachment(RMotionComp);
@@ -46,6 +52,10 @@ AVRCharacter::AVRCharacter()
 	RCollisionComp = CreateDefaultSubobject<USphereComponent>("RInteractSphereComp");
 	RCollisionComp->SetupAttachment(RMotionComp);
 	bIsGripping = false;
+
+	auto Capsule = GetCapsuleComponent();
+	Capsule->SetCollisionObjectType(ECC_GameTraceChannel3);
+	GetCharacterMovement()->GravityScale = 0.f;
 }
 
 // Called when the game starts or when spawned
@@ -61,6 +71,9 @@ void AVRCharacter::BeginPlay()
 	{
 		EnhancedInput->AddMappingContext(IMC_VRCharacter, 0);
 	}
+
+
+	UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Floor);
 }
 
 // Called every frame
@@ -127,10 +140,25 @@ void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	EnhancedInput->BindAction(IA_RHandGripPress, ETriggerEvent::Started, this, &AVRCharacter::OnRightGrip);
 	EnhancedInput->BindAction(IA_RHandGripPress, ETriggerEvent::Completed, this, &AVRCharacter::OnRightGrip);
 
+	EnhancedInput->BindAction(IA_RHandTriggerPress, ETriggerEvent::Started, this, &AVRCharacter::OnRightTrigger);
+
 }
 
 void AVRCharacter::OnRightGrip(const FInputActionValue& Value)
 {
 	bIsGripping = Value.Get<bool>();
+}
+
+void AVRCharacter::OnRightTrigger(const FInputActionValue& Value)
+{
+	if (bIsGripping && RInteractingActor)
+	{
+		auto temp = Cast<IVRInteractInterface>(RInteractingActor);
+		if (temp)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s(%d) - OnRightTrigger Input"), *FString(__FUNCTION__), __LINE__);
+			temp->OnInteract(this);
+		}
+	}
 }
 
