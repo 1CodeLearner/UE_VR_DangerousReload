@@ -4,9 +4,9 @@
 #include "CEnemy.h"
 #include <Components/SphereComponent.h>
 #include "../DVRGameModeBase.h"
-#include "../Justin/VRInteractableActor.h"
 #include <../../../../../../../Source/Runtime/Engine/Classes/Kismet/GameplayStatics.h>
 #include "../../../../KasanKDT_VR/Source/KDT_VR/Public/VRPlayer.h"
+#include "../Justin/VRInteractables/VRInteractableActor_Pistol.h"
 
 // Sets default values
 ACEnemy::ACEnemy()
@@ -69,7 +69,7 @@ void ACEnemy::BeginPlay()
 	fakeBulletCount = currBulletCount / 2;
 	gameMode = Cast<ADVRGameModeBase>(GetWorld()->GetAuthGameMode());
 	player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-	gun = Cast<AVRInteractableActor>(UGameplayStatics::GetActorOfClass(GetWorld(), AVRInteractableActor::StaticClass()));
+	gun = Cast<AVRInteractableActor_Pistol>(UGameplayStatics::GetActorOfClass(GetWorld(), AVRInteractableActor_Pistol::StaticClass()));
 
 }
 
@@ -108,7 +108,7 @@ void ACEnemy::Tick(float DeltaTime)
 			//		else
 			//			currBullet - 1
 			// else
-			//	shoot to player
+			Shoot(player);
 
 			// gameMode->isPlayerTurn = true
 		}
@@ -144,10 +144,13 @@ void ACEnemy::MoveToGun()
 	bool bChecked = GetWorld()->SweepSingleByObjectType(hitInfo, pos, pos, FQuat::Identity, objectParams, FCollisionShape::MakeSphere(20), params);
 
 	if (bChecked) {
-		currentObject = Cast<AVRInteractableActor>(hitInfo.GetActor());
+		currentObject = Cast<AVRInteractableActor_Pistol>(hitInfo.GetActor());
 		if (currentObject != nullptr)
 		{
-			// grab
+			//FAttachmentTransformRules attachRules = FAttachmentTransformRules::SnapToTargetNotIncludingScale;
+
+			//AttachToComponent(rightComp, attachRules, FName("Gun"));
+			currentObject->OnPickup(rightComp);
 		}
 	}
 }
@@ -157,6 +160,7 @@ void ACEnemy::ReturnToBody(ACharacter* target)
 	rightComp->SetRelativeLocation(FVector(0, 20, 0).GetSafeNormal());
 	if (rightComp->GetRelativeLocation() == FVector(0, 20, 0))
 	{
+		ShotGun(target);
 	}
 }
 

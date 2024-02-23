@@ -5,6 +5,7 @@
 #include "VRInteractableActor.h"
 #include "../VRCharacter.h"
 #include "Components/BoxComponent.h"
+#include "../JINA/CEnemy.h"
 
 
 static TAutoConsoleVariable<bool> CVarTestPhysics(TEXT("jk.TogglePhysics"), true, TEXT("Toggle Test Physics for Interactable objects"), ECVF_Cheat);
@@ -43,7 +44,17 @@ void AVRInteractableActor::OnPickup(AActor* InstigatorA)
 	GrabbableBoxComponent->SetSimulatePhysics(bIsPhysicsEnabled);
 
 	auto VRCharacter = Cast<AVRCharacter>(InstigatorA);
-	AttachToComponent(VRCharacter->RHandSKMComp, FAttachmentTransformRules::KeepWorldTransform);
+	if (VRCharacter != nullptr)
+	{
+		AttachToComponent(VRCharacter->RHandSKMComp, FAttachmentTransformRules::KeepWorldTransform);
+	}
+	else {
+		auto Enemy = Cast<ACEnemy>(InstigatorA);
+		if (Enemy != nullptr)
+		{
+			AttachToComponent(Enemy->rightComp, FAttachmentTransformRules::KeepWorldTransform);
+		}
+	}
 
 	SetOwner(InstigatorA);
 }
