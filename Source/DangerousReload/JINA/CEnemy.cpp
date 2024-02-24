@@ -150,7 +150,7 @@ void ACEnemy::MoveToGun()
 			//FAttachmentTransformRules attachRules = FAttachmentTransformRules::SnapToTargetNotIncludingScale;
 
 			//AttachToComponent(rightComp, attachRules, FName("Gun"));
-			currentObject->OnPickup(rightComp);
+			//currentObject->OnPickup(rightComp);
 		}
 	}
 }

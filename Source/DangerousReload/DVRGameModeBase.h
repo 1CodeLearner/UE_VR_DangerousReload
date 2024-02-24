@@ -17,4 +17,15 @@ class DANGEROUSRELOAD_API ADVRGameModeBase : public AGameModeBase
 public:
 	bool isPlayerTurn = false;
 	float bulletCount;
+
+	UPROPERTY(EditAnywhere, Category = "My Settings")
+	TArray<class ACSpotLight*> playerLifeSpotlight;
+
+	UPROPERTY(EditAnywhere, Category = "My Settings")
+	TArray<class ACSpotLight*> enemyLifeSpotlight;
+	
+
+public:
+	ADVRGameModeBase();
+	void ChangeLifeLightColor(ACharacter* target, FLinearColor color);
 };

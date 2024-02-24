@@ -39,7 +39,7 @@ public:
 	class USkeletalMeshComponent* leftComp;
 
 	class ADVRGameModeBase* gameMode;
-	class AVRInteractableActor* gun;
+	class AVRInteractableActor_Pistol* gun;
 	float currBulletCount;
 	float fakeBulletCount;
 	float life = 4;
