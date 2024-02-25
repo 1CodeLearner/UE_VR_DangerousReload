@@ -12,6 +12,7 @@
 #include "Components/CapsuleComponent.h"
 #include "../VRInteractInterface.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
+#include "VRHealthComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
@@ -26,6 +27,10 @@ AVRCharacter::AVRCharacter()
 
 	HeadSMComp = CreateDefaultSubobject<UStaticMeshComponent>("HeadSMComp");
 	HeadSMComp->SetupAttachment(CameraComp);
+
+	SphereComp = CreateDefaultSubobject<USphereComponent>("SphereComp");
+	SphereComp->SetupAttachment(CameraComp);
+	SphereComp->SetSphereRadius(12);
 
 	//LeftHand
 	LMotionComp = CreateDefaultSubobject<UMotionControllerComponent>("LMotionComp");
@@ -73,7 +78,9 @@ void AVRCharacter::BeginPlay()
 	}
 
 
-	UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Floor);
+	UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Eye);
+
+	HealthComp->OnHealthChanged.AddUObject(this, &AVRCharacter::OnHealthChange);
 }
 
 // Called every frame
@@ -159,6 +166,18 @@ void AVRCharacter::OnRightTrigger(const FInputActionValue& Value)
 			UE_LOG(LogTemp, Warning, TEXT("%s(%d) - OnRightTrigger Input"), *FString(__FUNCTION__), __LINE__);
 			temp->OnInteract(this);
 		}
+	}
+}
+
+void AVRCharacter::OnHealthChange(bool bDamaged, int HealthRemaining)
+{
+	if(bDamaged)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Damaged: %d"), HealthRemaining);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Recovered: %d"), HealthRemaining);
 	}
 }
 

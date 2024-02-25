@@ -5,7 +5,7 @@
 #include "VRInteractableActor.h"
 #include "../VRCharacter.h"
 #include "Components/BoxComponent.h"
-#include "../JINA/CEnemy.h"
+#include "../../JINA/CEnemy.h"
 
 
 static TAutoConsoleVariable<bool> CVarTestPhysics(TEXT("jk.TogglePhysics"), true, TEXT("Toggle Test Physics for Interactable objects"), ECVF_Cheat);

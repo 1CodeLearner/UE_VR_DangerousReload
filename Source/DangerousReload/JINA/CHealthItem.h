@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "../Justin/VRInteractableActor.h"
+#include "DangerousReload/Justin/VRInteractables/VRInteractableActor.h"
 #include "CHealthItem.generated.h"
 
 /**

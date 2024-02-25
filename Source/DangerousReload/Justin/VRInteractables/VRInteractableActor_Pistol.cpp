@@ -3,6 +3,8 @@
 
 #include "VRInteractableActor_Pistol.h"
 
+#include "DangerousReload/DVRGameModeBase.h"
+
 AVRInteractableActor_Pistol::AVRInteractableActor_Pistol()
 {
 	bCanFire = false;
@@ -37,9 +39,14 @@ void AVRInteractableActor_Pistol::OnInteract(AActor* InstigatorA)
 	Super::OnInteract(InstigatorA);
 	if (SKMComp)
 	{
-		if (bCanFire)
+		if (ActorInLOS)
 		{
 			SKMComp->PlayAnimation(FireSequenceAnim, false);
+			auto GameMode =GetWorld()->GetAuthGameMode<ADVRGameModeBase>();
+			if(ensure(GameMode))
+			{
+				GameMode->OnFired(ActorInLOS);
+			}
 		}
 	}
 }
@@ -71,7 +78,7 @@ void AVRInteractableActor_Pistol::CheckCanFire()
 
 		if (!bVisibilityHit)
 		{
-			bCanFire = true;
+			ActorInLOS = PartiHit.GetActor();
 			DrawDebugSphere(GetWorld(), PartiHit.ImpactPoint, 6.f, 24, FColor::Red, false, 1.f);
 			return;	
 		}
@@ -80,7 +87,7 @@ void AVRInteractableActor_Pistol::CheckCanFire()
 		}
 	}
 
-	bCanFire = false;
+	ActorInLOS = nullptr;
 	DrawDebugLine(GetWorld(), Start, End, FColor::Blue, false, 2.f);
 
 }

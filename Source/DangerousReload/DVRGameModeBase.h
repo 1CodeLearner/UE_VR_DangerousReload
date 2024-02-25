@@ -18,11 +18,13 @@ public:
 	bool isPlayerTurn = false;
 	float bulletCount;
 
-	UPROPERTY(EditAnywhere, Category = "My Settings")
+	void StartRound();
+	void OnFired(AActor* ActorHit);
+	/*UPROPERTY(EditAnywhere, Category = "My Settings")
 	TArray<class ACSpotLight*> playerLifeSpotlight;
 
 	UPROPERTY(EditAnywhere, Category = "My Settings")
-	TArray<class ACSpotLight*> enemyLifeSpotlight;
+	TArray<class ACSpotLight*> enemyLifeSpotlight;*/
 	
 
 public:

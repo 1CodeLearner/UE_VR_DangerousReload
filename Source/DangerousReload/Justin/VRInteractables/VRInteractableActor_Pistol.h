@@ -29,5 +29,6 @@ protected:
 private:
 	
 	void CheckCanFire();
-	bool bCanFire;
+	UPROPERTY()
+	AActor* ActorInLOS;
 };
