@@ -5,40 +5,140 @@
 #include "Justin/VRCharacter.h"/*
 #include "JINA/CSpotLight.h"*/
 #include "Justin/VRHealthComponent.h"
+#include "Justin/VRCharacter.h"
+#include "JINA/CEnemy.h"
+#include "EngineUtils.h"
+#include "JINA/CSpotLightActor.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/SpotLightComponent.h"
+
 
 ADVRGameModeBase::ADVRGameModeBase()
 {
-
+	MatchCount = 0;
+	bCanFire = false;
 }
 
-
-void ADVRGameModeBase::StartRound()
+void ADVRGameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
+	Super::InitGame(MapName, Options, ErrorMessage);
 
-}
-
-void ADVRGameModeBase::OnFired(AActor* ActorHit)
-{
-	ACharacter* CharacterHit = Cast<ACharacter>(ActorHit);
-	if (ensure(CharacterHit))
+	for (TActorIterator<AVRCharacter> Iter(GetWorld()); Iter; ++Iter)
 	{
-		UVRHealthComponent* HealthComp = CharacterHit->GetComponentByClass<UVRHealthComponent>();
-		if (ensure(HealthComp))
+		if (!Player)
 		{
+			Player = *Iter;
+		}
+	}
+
+	for (TActorIterator<ACEnemy> Iter(GetWorld()); Iter; ++Iter)
+	{
+		if (!Enemy)
+		{
+			Enemy = *Iter;
+		}
+	}
+}
+
+void ADVRGameModeBase::BeginPlay()
+{
+	Super::BeginPlay();
+	StartMatch();
+}
+
+void ADVRGameModeBase::StartMatch()
+{
+	if (ensure(DT_Rounds))
+	{
+		TArray<FName> Names = DT_Rounds->GetRowNames();
+		const TCHAR* Context = TEXT("Context");
+		FRound* Round = DT_Rounds->FindRow<FRound>(Names[MatchCount], Context);
+		MatchCount++;
+
+		if (Player)
+		{
+			auto PlayerHealth = Player->GetComponentByClass<UVRHealthComponent>();
+			if (ensure(PlayerHealth))
+			{
+				PlayerHealth->SetMaxHealth(Round->Health);
+			}
+		}
+		if (Enemy)
+		{
+			auto EnemyHealth = Enemy->GetComponentByClass<UVRHealthComponent>();
+
+			if (ensure(EnemyHealth))
+			{
+				EnemyHealth->SetMaxHealth(Round->Health);
+			}
+		}
+	}
+
+	isPlayerTurn = true;
+	bCanFire = true;
+	OnMatchStart.Broadcast();
+}
+
+
+void ADVRGameModeBase::OnFired(AActor* ActorInstigator, AActor* ActorAimed, bool bIsLiveRound)
+{
+	if (bIsLiveRound)
+	{
+		UVRHealthComponent* HealthComp = ActorAimed->GetComponentByClass<UVRHealthComponent>();
+		if (ensure(HealthComp))
 			HealthComp->InflictDamage();
+
+		ACharacter* CharacterHit = Cast<ACharacter>(ActorAimed);
+		if (CharacterHit)
+		{
 			ChangeLifeLightColor(CharacterHit, FLinearColor(0, 0, 0, 0));
 		}
+
+		//Switch Turns regardless who was shot
+		if (ActorInstigator == Player)
+		{
+			CurrentTurn = Enemy;
+		}
+		else
+		{
+			CurrentTurn = Player;
+		}
+	}
+	else
+	{
+		//Switch turn only if the blank was shot at other participant
+		if (CurrentTurn != ActorAimed)
+		{
+			CurrentTurn = ActorAimed;
+		}
+		UGameplayStatics::PlaySoundAtLocation(Player, EmptyGunSound, Player->GetActorLocation(), FRotator::ZeroRotator);
+	}
+
+	bCanFire = false;
+}
+
+bool ADVRGameModeBase::CanFire() const
+{
+	return bCanFire;
+}
+
+void ADVRGameModeBase::SetCanFire(bool _bCanFire)
+{
+	bCanFire = _bCanFire;
+	if(ensure(RackingSound))
+	{
+		UGameplayStatics::PlaySoundAtLocation(Player, RackingSound, Player->GetActorLocation(), FRotator::ZeroRotator);
 	}
 }
 
 void ADVRGameModeBase::ChangeLifeLightColor(ACharacter* target, FLinearColor color)
 {
-	/*if (Cast<AVRCharacter>(target) != nullptr) {
+	if (Cast<AVRCharacter>(target) != nullptr) {
 		for (int32 i = 0; i < playerLifeSpotlight.Num(); i++) {
-			if (playerLifeSpotlight[i]->GetLightColor() == color) continue;
+			if (playerLifeSpotlight[i]->spotLight->GetLightColor() == color) continue;
 			else
 			{
-				playerLifeSpotlight[i]->SetLightColor(color);
+				playerLifeSpotlight[i]->spotLight->SetLightColor(color);
 				break;
 			}
 		}
@@ -46,12 +146,12 @@ void ADVRGameModeBase::ChangeLifeLightColor(ACharacter* target, FLinearColor col
 	else
 	{
 		for (int32 i = 0; i < enemyLifeSpotlight.Num(); i++) {
-			if(enemyLifeSpotlight[i]->GetLightColor() == color) continue;
+			if(enemyLifeSpotlight[i]->spotLight->GetLightColor() == color) continue;
 			else
 			{
-				enemyLifeSpotlight[i]->SetLightColor(color);
+				enemyLifeSpotlight[i]->spotLight->SetLightColor(color);
 				break;
 			}
 		}
-	}*/
+	}
 }

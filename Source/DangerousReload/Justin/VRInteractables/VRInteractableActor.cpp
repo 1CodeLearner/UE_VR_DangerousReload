@@ -6,6 +6,7 @@
 #include "../VRCharacter.h"
 #include "Components/BoxComponent.h"
 #include "../../JINA/CEnemy.h"
+#include "../../DVRGameModeBase.h"
 
 
 static TAutoConsoleVariable<bool> CVarTestPhysics(TEXT("jk.TogglePhysics"), true, TEXT("Toggle Test Physics for Interactable objects"), ECVF_Cheat);
@@ -33,6 +34,17 @@ AVRInteractableActor::AVRInteractableActor()
 	SKMComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SKMComp->SetRelativeLocation(FVector(0.0, 0.0, -50));
 	SKMComp->SetSimulatePhysics(false);
+}
+
+void AVRInteractableActor::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	auto GM = GetWorld()->GetAuthGameMode<ADVRGameModeBase>();
+	if(GM)
+	{
+		GameMode = GM;
+	}
 }
 
 void AVRInteractableActor::OnPickup(AActor* InstigatorA)

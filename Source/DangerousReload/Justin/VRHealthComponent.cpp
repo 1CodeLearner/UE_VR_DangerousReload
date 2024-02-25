@@ -5,14 +5,22 @@
 
 UVRHealthComponent::UVRHealthComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
-	MaxHealth = 0;
+	PrimaryComponentTick.bCanEverTick = true;
+	MaxHealth = 1;
 	bIsDead = false;
 }
 
 void UVRHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void UVRHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Magenta, FString::Printf(TEXT("Health: %d"), MaxHealth));
+
 }
 
 

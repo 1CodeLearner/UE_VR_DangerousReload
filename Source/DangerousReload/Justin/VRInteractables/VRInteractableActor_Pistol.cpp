@@ -7,21 +7,37 @@
 
 AVRInteractableActor_Pistol::AVRInteractableActor_Pistol()
 {
-	bCanFire = false;
+	RoundCounter = 0;
+}
+
+void AVRInteractableActor_Pistol::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	if (GameMode)
+	{
+		GameMode->OnMatchStart.AddUObject(this, &AVRInteractableActor_Pistol::OnMatchStart);
+	}
 }
 
 void AVRInteractableActor_Pistol::BeginPlay()
 {
 	Super::BeginPlay();
+
 }
 
 void AVRInteractableActor_Pistol::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (GetOwner()) 
+	if (GetOwner())
 	{
 		CheckCanFire();
 	}
+	for (int i = 0; i < Rounds.Num(); ++i)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Magenta, FString::Printf(TEXT("Round%d: %s"), i, Rounds[i] ? TEXT("True") : TEXT("False")));
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Magenta, FString::Printf(TEXT("CurrentRound: %d"), RoundCounter));
 }
 
 void AVRInteractableActor_Pistol::OnPickup(AActor* InstigatorA)
@@ -39,17 +55,65 @@ void AVRInteractableActor_Pistol::OnInteract(AActor* InstigatorA)
 	Super::OnInteract(InstigatorA);
 	if (SKMComp)
 	{
-		if (ActorInLOS)
+		if (ensureAlways(GameMode) && GameMode->CanFire() && ActorInLOS)
 		{
-			SKMComp->PlayAnimation(FireSequenceAnim, false);
-			auto GameMode =GetWorld()->GetAuthGameMode<ADVRGameModeBase>();
-			if(ensure(GameMode))
+			if (ensureAlways(RoundCounter < Rounds.Num()) && Rounds[RoundCounter])
 			{
-				GameMode->OnFired(ActorInLOS);
+				SKMComp->PlayAnimation(FireSequenceAnim, false);
 			}
+
+			GameMode->OnFired(GetOwner(), ActorInLOS, Rounds[RoundCounter]);
+
+			RoundCounter++;
 		}
 	}
 }
+
+void AVRInteractableActor_Pistol::OnMatchStart()
+{
+	int32 totalRounds = FMath::RandRange(2, 8);
+	int32 liveRounds = totalRounds / 2;
+
+	int32 operations = FMath::RandRange(0, 2);
+	if (totalRounds > 4)
+	{
+		switch (operations)
+		{
+		case 0:
+		{
+			break;
+		}
+		case 1:
+		{
+			liveRounds++;
+			break;
+		}
+		case 2:
+		{
+			liveRounds--;
+			break;
+		}
+		}
+	}
+
+	LiveRounds = liveRounds;
+
+	Rounds.Reset();
+	Rounds.SetNum(totalRounds);
+	int Counter = 0;
+	do
+	{
+		int RandVal = FMath::RandRange(0, Rounds.Num() - 1);
+		if (Rounds[RandVal] != true)
+		{
+			Rounds[RandVal] = true;
+			Counter++;
+		}
+	} while (Counter != LiveRounds);
+
+	GameMode->bulletCount = totalRounds;
+}
+
 
 void AVRInteractableActor_Pistol::CheckCanFire()
 {
@@ -80,7 +144,7 @@ void AVRInteractableActor_Pistol::CheckCanFire()
 		{
 			ActorInLOS = PartiHit.GetActor();
 			DrawDebugSphere(GetWorld(), PartiHit.ImpactPoint, 6.f, 24, FColor::Red, false, 1.f);
-			return;	
+			return;
 		}
 		else {
 			DrawDebugSphere(GetWorld(), VisiHit.ImpactPoint, 6.f, 24, FColor::Blue, false, 1.f);

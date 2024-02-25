@@ -16,6 +16,7 @@ class UTextRenderComponent;
 class UInputMappingContext;
 class UInputAction;
 class USphereComponent;
+class APlayerController;
 
 UCLASS()
 class DANGEROUSRELOAD_API AVRCharacter : public ACharacter
@@ -72,12 +73,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Input")
 	TObjectPtr<UInputAction> IA_RHandTriggerPress;
 
+	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Input")
+	TObjectPtr<UInputAction> IA_RThumbAButtonPress;
 
 	//Gameplay Components
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
 	TObjectPtr<UVRHealthComponent> HealthComp;
 
-	
+
 
 public:
 	// Called every frame
@@ -95,8 +98,19 @@ protected:
 
 	void OnHealthChange(bool bDamaged, int HealthRemaining);
 
+	void RackPistol();
+
 private:
+	bool bIsGripping;
 	UPROPERTY()
 	AActor* RInteractingActor;
 	void CheckGrabObject();
+
+	UPROPERTY()
+	TObjectPtr<APlayerController> PC;
+
+	UFUNCTION()
+	void FadeOut();
+	UFUNCTION()
+	void GameOver();
 };

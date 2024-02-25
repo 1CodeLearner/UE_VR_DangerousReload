@@ -66,7 +66,7 @@ void ACEnemy::BeginPlay()
 	Super::BeginPlay();
 	currBulletCount = gameMode->bulletCount;
 	fakeBulletCount = currBulletCount / 2;
-	gameMode = Cast<ADVRGameModeBase>(GetWorld()->GetAuthGameMode());
+	gameMode = GetWorld()->GetAuthGameMode<ADVRGameModeBase>();
 	player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 	gun = Cast<AVRInteractableActor_Pistol>(UGameplayStatics::GetActorOfClass(GetWorld(), AVRInteractableActor_Pistol::StaticClass()));
 

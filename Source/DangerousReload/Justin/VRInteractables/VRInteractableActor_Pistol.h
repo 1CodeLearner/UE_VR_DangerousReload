@@ -15,6 +15,7 @@ class DANGEROUSRELOAD_API AVRInteractableActor_Pistol : public AVRInteractableAc
 	GENERATED_BODY()
 public:
 	AVRInteractableActor_Pistol();
+	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaTime) override;
@@ -26,9 +27,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Pistol")
 	TObjectPtr<UAnimSequence> FireSequenceAnim;
 
+	void OnMatchStart();
+
 private:
-	
 	void CheckCanFire();
 	UPROPERTY()
 	AActor* ActorInLOS;
+
+	int LiveRounds;
+	TArray<bool> Rounds;
+	int RoundCounter; 
 };
