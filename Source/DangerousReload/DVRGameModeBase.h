@@ -19,10 +19,10 @@ public:
 	float bulletCount;
 
 	UPROPERTY(EditAnywhere, Category = "My Settings")
-	TArray<class ACSpotLight*> playerLifeSpotlight;
+	TArray<class ACSpotLightActor*> playerLifeSpotlight;
 
 	UPROPERTY(EditAnywhere, Category = "My Settings")
-	TArray<class ACSpotLight*> enemyLifeSpotlight;
+	TArray<class ACSpotLightActor*> enemyLifeSpotlight;
 	
 
 public:

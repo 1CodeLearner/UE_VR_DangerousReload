@@ -3,18 +3,25 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/SpotLight.h"
-#include "CSpotLight.generated.h"
+#include "GameFramework/Actor.h"
+#include "CSpotLightActor.generated.h"
 
-/**
- * 
- */
 UCLASS()
-class DANGEROUSRELOAD_API ACSpotLight : public ASpotLight
+class DANGEROUSRELOAD_API ACSpotLightActor : public AActor
 {
 	GENERATED_BODY()
-public:
-	ACSpotLight();
+	
+public:	
+	// Sets default values for this actor's properties
+	ACSpotLightActor();
+
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+public:	
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
 
 public:
 	UPROPERTY(VisibleAnywhere, Category = "Life Light")
@@ -31,4 +38,5 @@ public:
 
 public:
 	void ChangeColor(FLinearColor color);
+
 };

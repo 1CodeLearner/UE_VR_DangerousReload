@@ -4,8 +4,7 @@
 #include "CEnemy.h"
 #include <Components/SphereComponent.h>
 #include "../DVRGameModeBase.h"
-#include <../../../../../../../Source/Runtime/Engine/Classes/Kismet/GameplayStatics.h>
-#include "../../../../KasanKDT_VR/Source/KDT_VR/Public/VRPlayer.h"
+#include <Kismet/GameplayStatics.h>
 #include "../Justin/VRInteractables/VRInteractableActor_Pistol.h"
 
 // Sets default values

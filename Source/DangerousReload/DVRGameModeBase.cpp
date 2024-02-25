@@ -3,7 +3,8 @@
 
 #include "DVRGameModeBase.h"
 #include "Justin/VRCharacter.h"
-#include "JINA/CSpotLight.h"
+#include "JINA/CSpotLightActor.h"
+#include <Components/SpotLightComponent.h>
 
 ADVRGameModeBase::ADVRGameModeBase()
 {
@@ -14,10 +15,10 @@ void ADVRGameModeBase::ChangeLifeLightColor(ACharacter* target, FLinearColor col
 {
 	if (Cast<AVRCharacter>(target) != nullptr) {
 		for (int32 i = 0; i < playerLifeSpotlight.Num(); i++) {
-			if (playerLifeSpotlight[i]->GetLightColor() == color) continue;
+			if (playerLifeSpotlight[i]->spotLight->GetLightColor() == color) continue;
 			else
 			{
-				playerLifeSpotlight[i]->SetLightColor(color);
+				playerLifeSpotlight[i]->spotLight->SetLightColor(color);
 				break;
 			}
 		}
@@ -25,10 +26,10 @@ void ADVRGameModeBase::ChangeLifeLightColor(ACharacter* target, FLinearColor col
 	else
 	{
 		for (int32 i = 0; i < enemyLifeSpotlight.Num(); i++) {
-			if(enemyLifeSpotlight[i]->GetLightColor() == color) continue;
+			if(enemyLifeSpotlight[i]->spotLight->GetLightColor() == color) continue;
 			else 
 			{
-				enemyLifeSpotlight[i]->SetLightColor(color);
+				enemyLifeSpotlight[i]->spotLight->SetLightColor(color);
 				break;
 			}
 		}
