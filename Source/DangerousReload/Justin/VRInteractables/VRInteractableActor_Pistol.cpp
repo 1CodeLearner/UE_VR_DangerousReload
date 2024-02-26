@@ -92,7 +92,7 @@ void AVRInteractableActor_Pistol::RackPistol()
 void AVRInteractableActor_Pistol::OnMatchStart()
 {
 	int32 totalRounds = FMath::RandRange(2, 8);
-	int32 liveRounds = totalRounds;// / 2;
+	int32 liveRounds = totalRounds/ 2;
 
 	int32 operations = FMath::RandRange(0, 2);
 	if (totalRounds > 4)

@@ -38,6 +38,9 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "MySettings")
 	class USkeletalMeshComponent* leftComp;
 
+	UPROPERTY(VisibleAnywhere, Category = "MySettings")
+	class UStaticMeshComponent* backComp;
+
 	class ADVRGameModeBase* gameMode;
 	class AVRInteractableActor_Pistol* gun;
 	float currBulletCount;

@@ -44,6 +44,19 @@ void ADVRGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 	StartMatch();
+
+	TArray<ACSpotLightActor*> lifeLight;
+	for (TObjectIterator<ACSpotLightActor> it; it; ++it) {
+		lifeLight.Add(*it);
+	}
+	for (int32 i = 0; i < 4; ++i)
+	{
+		playerLifeSpotlight.Add(Cast<ACSpotLightActor>(lifeLight[i]));
+	}
+	for (int32 i = 0; i < 4; ++i)
+	{
+		enemyLifeSpotlight.Add(Cast<ACSpotLightActor>(lifeLight[i + 4]));
+	}
 }
 
 void ADVRGameModeBase::StartMatch()
@@ -99,9 +112,14 @@ void ADVRGameModeBase::OnFired(AActor* ActorInstigator, AActor* ActorAimed, bool
 		}
 
 		ACharacter* CharacterHit = Cast<ACharacter>(ActorAimed);
+		ACharacter* EnemyHit = Cast<ACEnemy>(ActorAimed);
 		if (CharacterHit)
 		{
-			ChangeLifeLightColor(CharacterHit, FLinearColor(0, 0, 0, 0));
+			ChangeLifeLightColor(CharacterHit, FLinearColor::Red);
+		}
+		else if(EnemyHit)
+		{
+			ChangeLifeLightColor(EnemyHit, FLinearColor::Red);
 		}
 
 		//Switch Turns regardless who was shot

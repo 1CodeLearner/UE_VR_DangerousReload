@@ -53,12 +53,25 @@ ACEnemy::ACEnemy()
 		leftComp->SetSkeletalMesh(tempLeftHandMesh.Object);
 	}
 
+	// background
+	backComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Back Ground"));
+	backComp->SetupAttachment(RootComponent);
+	backComp->SetRelativeLocation(FVector(-50, 0, 0));
+	backComp->SetWorldScale3D(FVector(0.1f, 5, 3));
+	backComp->SetStaticMesh(tempMesh.Object);
+
 	ConstructorHelpers::FObjectFinder<UMaterial> tempMat(TEXT("/Script/Engine.Material'/Engine/ArtTools/RenderToTexture/Materials/Debug/M_BaseColor_Constant.M_BaseColor_Constant'"));
 	if (tempMat.Succeeded())
 	{
 		meshComp->SetMaterial(0, tempMat.Object);
 		rightComp->SetMaterial(0, tempMat.Object);
 		leftComp->SetMaterial(0, tempMat.Object);
+	}
+
+	ConstructorHelpers::FObjectFinder<UMaterial> tempBlackMat(TEXT("/Script/Engine.Material'/Engine/EngineDebugMaterials/BlackUnlitMaterial.BlackUnlitMaterial'"));
+	if (tempBlackMat.Succeeded())
+	{
+		backComp->SetMaterial(0, tempBlackMat.Object);
 	}
 
 	HealthComp = CreateDefaultSubobject<UVRHealthComponent>("HealthComp");
@@ -83,6 +96,13 @@ void ACEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// face return
+	if (meshComp->GetRelativeLocation() != FVector(0, 0, 0)) {
+		meshComp->SetRelativeLocation(meshComp->GetRelativeLocation() + FVector(1, 0, 0));
+		return;
+	}
+
+	// Enemy turn
 	if (!gameMode->isPlayerTurn) {
 		if (life < 4)
 		{
@@ -118,8 +138,14 @@ void ACEnemy::Tick(float DeltaTime)
 			// gameMode->isPlayerTurn = true
 		}
 	}
+	// player turn
 	else if (gameMode->isPlayerTurn)
 	{
+		currBulletCount -= 1;
+		if (ensure(HealthComp)) {
+			meshComp->SetRelativeLocation(FVector(-70, 0, 0));
+			gameMode->isPlayerTurn = false;
+		}
 		// if fail
 		// fakeBulletCount - 1 and currBullet - 1
 		// if succeed

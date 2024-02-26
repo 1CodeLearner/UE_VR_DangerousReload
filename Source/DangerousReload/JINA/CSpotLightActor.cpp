@@ -11,7 +11,7 @@ ACSpotLightActor::ACSpotLightActor()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	lightIntensity = 3000.0f;
+	lightIntensity = 30000.0f;
 	radiusSize = 300;
 	cornAngle = 20;
 
