@@ -2,8 +2,7 @@
 
 
 #include "DVRGameModeBase.h"
-#include "Justin/VRCharacter.h"/*
-#include "JINA/CSpotLight.h"*/
+#include "Justin/VRCharacter.h"
 #include "Justin/VRHealthComponent.h"
 #include "Justin/VRCharacter.h"
 #include "JINA/CEnemy.h"
