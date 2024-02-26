@@ -8,6 +8,7 @@
 
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FHealthChangedDelegate, bool bDamaged, int HealthRemaining);
+DECLARE_MULTICAST_DELEGATE(FDeadDelegate);
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class DANGEROUSRELOAD_API UVRHealthComponent : public UActorComponent
@@ -27,11 +28,14 @@ public:
 
 	bool IsDead() const;
 
+	int GetMaxHealth() const;
+
 	FHealthChangedDelegate OnHealthChanged;
+	FDeadDelegate OnDead;
 
 protected:
 	virtual void BeginPlay() override;
-
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true), Category = "State");
 	int MaxHealth;

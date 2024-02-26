@@ -7,25 +7,66 @@
 #include "DVRGameModeBase.generated.h"
 
 /**
- * 
+ *
  */
+
+DECLARE_MULTICAST_DELEGATE(FMatchStartDelegate);
+
+class AVRCharacter;
+class ACEnemy;
+
+USTRUCT(BlueprintType)
+struct FRound : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	int Health;
+};
+
+
+class UDataTable;
+
 UCLASS()
 class DANGEROUSRELOAD_API ADVRGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 
 public:
+	FMatchStartDelegate OnMatchStart; 
+
 	bool isPlayerTurn = false;
-	float bulletCount;
+	int bulletCount;
+
+	void StartMatch();
+
+	void OnFired(AActor* ActorInstigator, AActor* ActorHit, bool bIsLiveRound);
+
+	bool IsMatchOver() const;
 
 	UPROPERTY(EditAnywhere, Category = "My Settings")
 	TArray<class ACSpotLightActor*> playerLifeSpotlight;
 
 	UPROPERTY(EditAnywhere, Category = "My Settings")
 	TArray<class ACSpotLightActor*> enemyLifeSpotlight;
-	
+
 
 public:
 	ADVRGameModeBase();
+	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
+	virtual void BeginPlay() override;
 	void ChangeLifeLightColor(ACharacter* target, FLinearColor color);
+
+protected:
+	UPROPERTY(EditDefaultsOnly, Category = "Settings")
+	TObjectPtr<UDataTable> DT_Matches;
+
+private:
+	int MatchCount;
+	bool bCanFire;
+	bool bMatchOver;
+
+	TObjectPtr<AVRCharacter> Player;
+	TObjectPtr<ACEnemy> Enemy;
+	AActor* CurrentTurn;
 };

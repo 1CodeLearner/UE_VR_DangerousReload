@@ -18,6 +18,7 @@ class DANGEROUSRELOAD_API AVRInteractableActor : public AActor, public IVRIntera
 public:
 	// Sets default values for this actor's properties
 	AVRInteractableActor();
+	virtual void PostInitializeComponents() override;
 	virtual void OnPickup(AActor* InstigatorA) override;
 	virtual void OnRelease(AActor* InstigatorA) override;
 	virtual void OnInteract(AActor* InstigatorA) override;
@@ -38,4 +39,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+protected:
+	UPROPERTY()
+	TObjectPtr<ADVRGameModeBase> GameMode; 
 };

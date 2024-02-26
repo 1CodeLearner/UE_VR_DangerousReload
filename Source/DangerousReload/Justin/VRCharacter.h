@@ -7,6 +7,7 @@
 #include "InputActionValue.h"
 #include "VRCharacter.generated.h"
 
+class UVRHealthComponent;
 class UCameraComponent;
 class UStaticMeshComponent;
 class UMotionControllerComponent;
@@ -15,6 +16,7 @@ class UTextRenderComponent;
 class UInputMappingContext;
 class UInputAction;
 class USphereComponent;
+class APlayerController;
 
 UCLASS()
 class DANGEROUSRELOAD_API AVRCharacter : public ACharacter
@@ -42,6 +44,9 @@ protected:
 	TObjectPtr<UCameraComponent> CameraComp;
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
 	TObjectPtr<UStaticMeshComponent> HeadSMComp;
+	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
+	TObjectPtr<USphereComponent> SphereComp;
+
 
 	//RightHand
 
@@ -68,6 +73,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Input")
 	TObjectPtr<UInputAction> IA_RHandTriggerPress;
 
+	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Input")
+	TObjectPtr<UInputAction> IA_RThumbAButtonPress;
+
+	//Gameplay Components
+	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
+	TObjectPtr<UVRHealthComponent> HealthComp;
+
+
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -82,8 +96,24 @@ protected:
 	UFUNCTION()
 	void OnRightTrigger(const FInputActionValue& Value);
 
+	//Delegates
+	void OnHealthChange(bool bDamaged, int HealthRemaining);
+	void OnDead();
+
+
 private:
 	bool bIsGripping;
+	UPROPERTY()
 	AActor* RInteractingActor;
 	void CheckGrabObject();
+
+	UPROPERTY()
+	TObjectPtr<APlayerController> PC;
+
+	UFUNCTION()
+	void FadeOut();
+	UFUNCTION()
+	void GameOver();
+
+	void RackPistol();
 };

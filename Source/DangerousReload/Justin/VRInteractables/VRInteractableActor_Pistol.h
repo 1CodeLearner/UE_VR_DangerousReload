@@ -15,6 +15,7 @@ class DANGEROUSRELOAD_API AVRInteractableActor_Pistol : public AVRInteractableAc
 	GENERATED_BODY()
 public:
 	AVRInteractableActor_Pistol();
+	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaTime) override;
@@ -22,12 +23,27 @@ public:
 	virtual void OnPickup(AActor* InstigatorA) override;
 	virtual void OnRelease(AActor* InstigatorA) override;
 	virtual void OnInteract(AActor* InstigatorA) override;
+
+	void RackPistol();
+
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Pistol")
 	TObjectPtr<UAnimSequence> FireSequenceAnim;
 
+	void OnMatchStart();
+
+	UPROPERTY(EditDefaultsOnly, Category = "Settings")
+	TObjectPtr<USoundBase> RackingSound;
+	UPROPERTY(EditDefaultsOnly, Category = "Settings")
+	TObjectPtr<USoundBase> EmptyGunSound;
+
 private:
-	
-	void CheckCanFire();
 	bool bCanFire;
+	void FindActorInLOS();
+	UPROPERTY()
+	AActor* ActorInLOS;
+
+	int LiveRounds;
+	TArray<bool> Rounds;
+	int RoundCounter; 
 };

@@ -46,10 +46,17 @@ public:
 	class AVRInteractableActor* currentObject;
 	class ACharacter* player;
 
+	UPROPERTY(VisibleAnywhere, Category = "MySettings")
+	class UVRHealthComponent* HealthComp;
+
 public:
 	void MoveToGun();
 	void ReturnToBody(ACharacter* target);
 	void Shoot(ACharacter* target);
 	void ShotGun(ACharacter* target);
 
+	UFUNCTION()
+	void OnHealthChanged(bool bDamaged, int HealthRemaining);
+	UFUNCTION()
+	void OnDead();
 };

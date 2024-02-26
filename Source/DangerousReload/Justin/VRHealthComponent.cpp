@@ -5,8 +5,8 @@
 
 UVRHealthComponent::UVRHealthComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
-	MaxHealth = 0;
+	PrimaryComponentTick.bCanEverTick = true;
+	MaxHealth = 1;
 	bIsDead = false;
 }
 
@@ -15,15 +15,22 @@ void UVRHealthComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
+void UVRHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Magenta, FString::Printf(TEXT("Health: %d"), MaxHealth));
+
+}
+
 
 void UVRHealthComponent::InflictDamage()
 {
 	//if dead, return
 	if (!ensure(!IsDead()))
 		return;
-
+	
 	MaxHealth--;
-	OnHealthChanged.Broadcast(true, MaxHealth);
 }
 
 void UVRHealthComponent::RecoverHealth()
@@ -33,8 +40,9 @@ void UVRHealthComponent::RecoverHealth()
 		return;
 
 	MaxHealth++;
-	OnHealthChanged.Broadcast(false, MaxHealth);
 }
+
+
 
 void UVRHealthComponent::SetMaxHealth(const int Health)
 {
@@ -45,5 +53,10 @@ void UVRHealthComponent::SetMaxHealth(const int Health)
 bool UVRHealthComponent::IsDead() const
 {
 	return MaxHealth <= 0;
+}
+
+int UVRHealthComponent::GetMaxHealth() const
+{
+	return MaxHealth;
 }
 
