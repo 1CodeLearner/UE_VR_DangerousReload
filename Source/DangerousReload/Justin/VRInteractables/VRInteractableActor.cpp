@@ -2,11 +2,9 @@
 
 
 #include "VRInteractableActor.h"
-#include "VRInteractableActor.h"
 #include "../VRCharacter.h"
 #include "Components/BoxComponent.h"
 #include "../../JINA/CEnemy.h"
-#include "../../DVRGameModeBase.h"
 
 
 static TAutoConsoleVariable<bool> CVarTestPhysics(TEXT("jk.TogglePhysics"), true, TEXT("Toggle Test Physics for Interactable objects"), ECVF_Cheat);
@@ -36,17 +34,6 @@ AVRInteractableActor::AVRInteractableActor()
 	SKMComp->SetSimulatePhysics(false);
 }
 
-void AVRInteractableActor::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-
-	auto GM = GetWorld()->GetAuthGameMode<ADVRGameModeBase>();
-	if(GM)
-	{
-		GameMode = GM;
-	}
-}
-
 void AVRInteractableActor::OnPickup(AActor* InstigatorA)
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnPickup invoked"));
@@ -70,6 +57,9 @@ void AVRInteractableActor::OnPickup(AActor* InstigatorA)
 
 	SetOwner(InstigatorA);
 }
+
+
+
 
 void AVRInteractableActor::OnRelease(AActor* InstigatorA)
 {
