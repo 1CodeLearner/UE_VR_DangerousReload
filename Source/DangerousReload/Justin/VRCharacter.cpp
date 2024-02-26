@@ -12,7 +12,10 @@
 #include "Components/CapsuleComponent.h"
 #include "../VRInteractInterface.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
+#include "VRHealthComponent.h"
+#include "DangerousReload/DVRGameModeBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "VRInteractables/VRInteractableActor_Pistol.h"
 
 // Sets default values
 AVRCharacter::AVRCharacter()
@@ -26,6 +29,10 @@ AVRCharacter::AVRCharacter()
 
 	HeadSMComp = CreateDefaultSubobject<UStaticMeshComponent>("HeadSMComp");
 	HeadSMComp->SetupAttachment(CameraComp);
+
+	SphereComp = CreateDefaultSubobject<USphereComponent>("SphereComp");
+	SphereComp->SetupAttachment(CameraComp);
+	SphereComp->SetSphereRadius(12);
 
 	//LeftHand
 	LMotionComp = CreateDefaultSubobject<UMotionControllerComponent>("LMotionComp");
@@ -56,6 +63,8 @@ AVRCharacter::AVRCharacter()
 	auto Capsule = GetCapsuleComponent();
 	Capsule->SetCollisionObjectType(ECC_GameTraceChannel3);
 	GetCharacterMovement()->GravityScale = 0.f;
+
+	HealthComp = CreateDefaultSubobject<UVRHealthComponent>("HealthComp");
 }
 
 // Called when the game starts or when spawned
@@ -63,17 +72,22 @@ void AVRCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	auto PC = GetController<APlayerController>();
+	PC = GetController<APlayerController>();
 
-	UEnhancedInputLocalPlayerSubsystem* EnhancedInput = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
-
-	if (ensure(IMC_VRCharacter))
+	if (ensure(PC))
 	{
-		EnhancedInput->AddMappingContext(IMC_VRCharacter, 0);
+		UEnhancedInputLocalPlayerSubsystem* EnhancedInput = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
+
+		if (ensure(IMC_VRCharacter))
+		{
+			EnhancedInput->AddMappingContext(IMC_VRCharacter, 0);
+		}
 	}
 
-
 	UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Floor);
+
+	HealthComp->OnHealthChanged.AddUObject(this, &AVRCharacter::OnHealthChange);
+	HealthComp->OnDead.AddUObject(this, &AVRCharacter::OnDead);
 }
 
 // Called every frame
@@ -142,6 +156,10 @@ void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 	EnhancedInput->BindAction(IA_RHandTriggerPress, ETriggerEvent::Started, this, &AVRCharacter::OnRightTrigger);
 
+	EnhancedInput->BindAction(IA_RHandTriggerPress, ETriggerEvent::Started, this, &AVRCharacter::OnRightTrigger);
+
+
+	EnhancedInput->BindAction(IA_RThumbAButtonPress, ETriggerEvent::Started, this, &AVRCharacter::RackPistol);
 }
 
 void AVRCharacter::OnRightGrip(const FInputActionValue& Value)
@@ -156,9 +174,58 @@ void AVRCharacter::OnRightTrigger(const FInputActionValue& Value)
 		auto temp = Cast<IVRInteractInterface>(RInteractingActor);
 		if (temp)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("%s(%d) - OnRightTrigger Input"), *FString(__FUNCTION__), __LINE__);
 			temp->OnInteract(this);
 		}
 	}
+}
+
+void AVRCharacter::OnHealthChange(bool bDamaged, int HealthRemaining)
+{
+	if (bDamaged)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Damaged: %d"), HealthRemaining);
+		if (PC)
+		{
+			PC->PlayerCameraManager->StartCameraFade(0, 1, .01f, FColor::Black, false, true);
+			FTimerHandle Handle;
+			GetWorld()->GetTimerManager().SetTimer(Handle, this, &AVRCharacter::FadeOut, 2.f, false);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Recovered: %d"), HealthRemaining);
+	}
+}
+
+void AVRCharacter::OnDead()
+{
+	if (PC)
+	{
+		PC->PlayerCameraManager->StartCameraFade(0, 1, .01f, FColor::Black, false, true);
+		FTimerHandle Handle;
+		GetWorld()->GetTimerManager().SetTimer(Handle, this, &AVRCharacter::GameOver, 2.f, false);
+	}
+}
+
+void AVRCharacter::RackPistol()
+{
+	auto Pistol = Cast<AVRInteractableActor_Pistol>(RInteractingActor);
+	if (Pistol) 
+	{
+		Pistol->RackPistol();
+	}
+}
+
+void AVRCharacter::FadeOut()
+{
+	if (PC)
+	{
+		PC->PlayerCameraManager->StartCameraFade(1, 0, 1.f, FColor::Black);
+	}
+}
+
+void AVRCharacter::GameOver()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Blue, FString::Printf(TEXT("Player is Dead")));
 }
 

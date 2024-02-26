@@ -6,6 +6,7 @@
 #include "../DVRGameModeBase.h"
 #include <Kismet/GameplayStatics.h>
 #include "../Justin/VRInteractables/VRInteractableActor_Pistol.h"
+#include "../Justin/VRHealthComponent.h"
 
 // Sets default values
 ACEnemy::ACEnemy()
@@ -15,6 +16,7 @@ ACEnemy::ACEnemy()
 
 	sphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Component"));
 	SetRootComponent(sphereComp);
+	sphereComp->SetCollisionObjectType(ECC_GameTraceChannel3);
 
 	meshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Static Mesh Component"));
 	meshComp->SetupAttachment(RootComponent);
@@ -58,18 +60,22 @@ ACEnemy::ACEnemy()
 		rightComp->SetMaterial(0, tempMat.Object);
 		leftComp->SetMaterial(0, tempMat.Object);
 	}
+
+	HealthComp = CreateDefaultSubobject<UVRHealthComponent>("HealthComp");
 }
 
 // Called when the game starts or when spawned
 void ACEnemy::BeginPlay()
 {
 	Super::BeginPlay();
+	gameMode = GetWorld()->GetAuthGameMode<ADVRGameModeBase>();
 	currBulletCount = gameMode->bulletCount;
 	fakeBulletCount = currBulletCount / 2;
-	gameMode = Cast<ADVRGameModeBase>(GetWorld()->GetAuthGameMode());
 	player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 	gun = Cast<AVRInteractableActor_Pistol>(UGameplayStatics::GetActorOfClass(GetWorld(), AVRInteractableActor_Pistol::StaticClass()));
 
+	HealthComp->OnHealthChanged.AddUObject(this, &ACEnemy::OnHealthChanged);
+	HealthComp->OnDead.AddUObject(this, &ACEnemy::OnDead);
 }
 
 // Called every frame
@@ -178,5 +184,16 @@ void ACEnemy::ShotGun(ACharacter* target)
 {
 	rightComp->SetRelativeRotation(FRotator(target->GetActorRotation().Yaw, target->GetActorRotation().Roll * -1, target->GetActorRotation().Pitch));
 	// gun->shoot
+}
+
+void ACEnemy::OnHealthChanged(bool bDamaged, int HealthRemaining)
+{
+	//health 가 변경될때 실행
+	UE_LOG(LogTemp, Warning, TEXT("%s: Health Changed"), *GetNameSafe(this));
+}
+
+void ACEnemy::OnDead()
+{
+	UE_LOG(LogTemp, Warning, TEXT("%s: IS DEAD!"), *GetNameSafe(this));
 }
 
