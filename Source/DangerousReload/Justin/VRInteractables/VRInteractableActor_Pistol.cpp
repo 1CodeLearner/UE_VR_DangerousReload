@@ -58,7 +58,7 @@ void AVRInteractableActor_Pistol::OnInteract(AActor* InstigatorA)
 	Super::OnInteract(InstigatorA);
 	if (ActorInLOS && bCanFire)
 	{
-		if (ensureAlways(RoundCounter < Rounds.Num()))
+		if (RoundCounter < Rounds.Num())
 		{
 			if (Rounds[RoundCounter])
 			{

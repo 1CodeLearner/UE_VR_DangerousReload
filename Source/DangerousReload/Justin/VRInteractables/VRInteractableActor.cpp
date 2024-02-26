@@ -5,14 +5,14 @@
 #include "../VRCharacter.h"
 #include "Components/BoxComponent.h"
 #include "../../JINA/CEnemy.h"
-
+#include "../../DVRGameModeBase.h"
 
 static TAutoConsoleVariable<bool> CVarTestPhysics(TEXT("jk.TogglePhysics"), true, TEXT("Toggle Test Physics for Interactable objects"), ECVF_Cheat);
 
 // Sets default values
 AVRInteractableActor::AVRInteractableActor()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	GrabbableBoxComponent = CreateDefaultSubobject<UBoxComponent>("GrabbableBoxComp");
@@ -32,6 +32,16 @@ AVRInteractableActor::AVRInteractableActor()
 	SKMComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SKMComp->SetRelativeLocation(FVector(0.0, 0.0, -50));
 	SKMComp->SetSimulatePhysics(false);
+}
+
+void AVRInteractableActor::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	auto Temp = GetWorld()->GetAuthGameMode<ADVRGameModeBase>();
+	if (ensure(Temp))
+	{
+		GameMode = Temp;
+	}
 }
 
 void AVRInteractableActor::OnPickup(AActor* InstigatorA)
