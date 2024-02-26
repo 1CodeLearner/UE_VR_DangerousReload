@@ -39,10 +39,10 @@ AVRInteractableActor::AVRInteractableActor()
 void AVRInteractableActor::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	auto Temp = GetWorld()->GetAuthGameMode<ADVRGameModeBase>();
+	auto Temp = GetWorld()->GetAuthGameMode()->GetGameState<AVRGameStateBase>();
 	if (ensure(Temp))
 	{
-		GameMode = Temp;
+		GameState = Temp;
 	}
 }
 

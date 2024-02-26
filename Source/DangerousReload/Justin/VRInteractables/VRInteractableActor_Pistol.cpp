@@ -5,6 +5,7 @@
 
 #include "DangerousReload/DVRGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
+#include "../../DVRGameModeBase.h"
 
 //static TAutoConsoleVariable<bool> CVarMaxLiveRounds(TEXT("jk.MaxLiveRounds"), false, TEXT("Set all rounds to live rounds")
 
@@ -19,9 +20,11 @@ void AVRInteractableActor_Pistol::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	if (GameMode)
+	GameMode = GetWorld()->GetAuthGameMode<ADVRGameModeBase>();
+
+	if (ensure(GameMode) && GameState)
 	{
-		GameMode->OnMatchStart.AddUObject(this, &AVRInteractableActor_Pistol::OnMatchStart);
+		GameState->OnMatchStateChanged.AddUObject(this, &AVRInteractableActor_Pistol::OnMatchChanged);
 	}
 }
 
@@ -95,15 +98,16 @@ bool AVRInteractableActor_Pistol::IsRoundsEmpty() const
 	return RoundCounter >= Rounds.Num();
 }
 
-void AVRInteractableActor_Pistol::OnMatchStart()
+void AVRInteractableActor_Pistol::OnMatchChanged()
 {
-	Reload();
+	if (GameState->MatchStateEnum == EMatchState::EMATCH_Start)
+		Reload();
 }
 
 void AVRInteractableActor_Pistol::Reload()
 {
 	int32 totalRounds = FMath::RandRange(2, 8);
-	int32 liveRounds = totalRounds;// / 2;
+	int32 liveRounds = totalRounds / 2;
 
 	int32 operations = FMath::RandRange(0, 2);
 	if (totalRounds > 4)

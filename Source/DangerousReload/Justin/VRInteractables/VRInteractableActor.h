@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "../../VRInteractInterface.h"
+#include "../../VRGameStateBase.h"
 #include "VRInteractableActor.generated.h"
 
 class UBoxComponent;
@@ -42,5 +43,5 @@ public:
 
 protected:
 	UPROPERTY()
-	TObjectPtr<ADVRGameModeBase> GameMode;
+	TObjectPtr<AVRGameStateBase> GameState;
 };

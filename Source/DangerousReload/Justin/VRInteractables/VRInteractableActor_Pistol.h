@@ -32,7 +32,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Pistol")
 	TObjectPtr<UAnimSequence> FireSequenceAnim;
 
-	void OnMatchStart();
+	void OnMatchChanged();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Settings")
 	TObjectPtr<USoundBase> RackingSound;
@@ -48,4 +48,7 @@ private:
 	int LiveRounds;
 	TArray<bool> Rounds;
 	int RoundCounter; 
+
+	UPROPERTY()
+	TObjectPtr<ADVRGameModeBase> GameMode;
 };

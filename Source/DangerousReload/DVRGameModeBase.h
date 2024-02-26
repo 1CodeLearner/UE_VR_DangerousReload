@@ -10,12 +10,12 @@
  *
  */
 
-DECLARE_MULTICAST_DELEGATE(FMatchStartDelegate);
 
 class AVRCharacter;
 class ACEnemy;
 class AVRInteractableActor;
 class AVRInteractableActor_Pistol;
+class AVRGameStateBase;
 
 USTRUCT(BlueprintType)
 struct FRound : public FTableRowBase
@@ -35,14 +35,13 @@ class DANGEROUSRELOAD_API ADVRGameModeBase : public AGameModeBase
 	GENERATED_BODY()
 
 public:
-	FMatchStartDelegate OnMatchStart; 
-
 	bool isPlayerTurn = false;
 	int bulletCount;
 
 	void StartMatch();
 
 	void OnFired(AActor* ActorInstigator, AActor* ActorHit, bool bIsLiveRound);
+	
 
 	bool IsMatchOver() const;
 
@@ -66,8 +65,6 @@ protected:
 	void RespawnPistol();
 
 private:
-	int MatchCount;
-	bool bMatchOver;
 	UPROPERTY()
 	TObjectPtr<AVRCharacter> Player;
 	UPROPERTY()
@@ -76,5 +73,7 @@ private:
 	TObjectPtr<AVRInteractableActor_Pistol> Pistol;
 	UPROPERTY(EditDefaultsOnly, Category = "My Settings")
 	TArray<TSubclassOf<AVRInteractableActor>> ItemClasses;
-	AActor* CurrentTurn;
+
+	UPROPERTY()
+	TObjectPtr<AVRGameStateBase> VRGameState;
 };

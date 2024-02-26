@@ -11,13 +11,11 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/SpotLightComponent.h"
 #include "Justin/VRInteractables/VRInteractableActor_Pistol.h"
+#include "VRGameStateBase.h"
 
 ADVRGameModeBase::ADVRGameModeBase()
 {
-	MatchCount = 0;
-	bMatchOver = false;
 }
-
 void ADVRGameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
@@ -42,14 +40,25 @@ void ADVRGameModeBase::InitGame(const FString& MapName, const FString& Options, 
 	{
 		if (!Pistol)
 		{
-			Pistol= *Iter;
+			Pistol = *Iter;
 		}
 	}
+
+	auto Temp = GetGameState<AVRGameStateBase>();
+	if (ensure(Temp))
+	{
+		VRGameState = Temp;
+	}
+
+	VRGameState->GameStateEnum = EGameState::EGAME_Menu;
+	VRGameState->MatchStateEnum = EMatchState::EMATCH_Default;
 }
 
 void ADVRGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
+
+	FTimerHandle Handle;
 	StartMatch();
 }
 
@@ -59,8 +68,7 @@ void ADVRGameModeBase::StartMatch()
 	{
 		TArray<FName> Names = DT_Matches->GetRowNames();
 		const TCHAR* Context = TEXT("Context");
-		FRound* Match = DT_Matches->FindRow<FRound>(Names[MatchCount], Context);
-		MatchCount++;
+		FRound* Match = DT_Matches->FindRow<FRound>(Names[VRGameState->MatchCount], Context);
 
 		if (Player)
 		{
@@ -82,7 +90,7 @@ void ADVRGameModeBase::StartMatch()
 	}
 
 	isPlayerTurn = true;
-	OnMatchStart.Broadcast();
+	VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_Start);
 }
 
 
@@ -91,12 +99,12 @@ void ADVRGameModeBase::OnFired(AActor* ActorInstigator, AActor* ActorAimed, bool
 	if (bIsLiveRound)
 	{
 		UVRHealthComponent* HealthComp = ActorAimed->GetComponentByClass<UVRHealthComponent>();
-		if (ensure(HealthComp)) 
+		if (ensure(HealthComp))
 		{
 			HealthComp->InflictDamage();
 			if (HealthComp->IsDead())
 			{
-				bMatchOver = true;
+				VRGameState->bMatchOver = true;
 				HealthComp->OnDead.Broadcast();
 			}
 			else {
@@ -113,49 +121,49 @@ void ADVRGameModeBase::OnFired(AActor* ActorInstigator, AActor* ActorAimed, bool
 		//Switch Turns regardless who was shot
 		if (ActorInstigator == Player)
 		{
-			CurrentTurn = Enemy;
+			VRGameState->CurrentTurn = Enemy;
 		}
 		else
 		{
-			CurrentTurn = Player;
+			VRGameState->CurrentTurn = Player;
 		}
 	}
 	else
 	{
 		//Switch turn only if the blank was shot at other participant
-		if (CurrentTurn != ActorAimed)
+		if (VRGameState->CurrentTurn != ActorAimed)
 		{
-			CurrentTurn = ActorAimed;
+			VRGameState->CurrentTurn = ActorAimed;
 		}
 	}
 }
 
 bool ADVRGameModeBase::IsMatchOver() const
 {
-	return bMatchOver;
+	return VRGameState->bMatchOver;
 }
 
 void ADVRGameModeBase::ChangeLifeLightColor(ACharacter* target, FLinearColor color)
 {
 	if (Cast<AVRCharacter>(target) != nullptr) {
 		for (int32 i = 0; i < playerLifeSpotlight.Num(); i++) {
-			if (playerLifeSpotlight[i]->spotLight->GetLightColor() == color) continue;
-			else
-			{
-				playerLifeSpotlight[i]->spotLight->SetLightColor(color);
-				break;
-			}
+			//if (playerLifeSpotlight[i]->spotLight->GetLightColor() == color) continue;
+			//else
+			//{
+			//	playerLifeSpotlight[i]->spotLight->SetLightColor(color);
+			//	break;
+			//}
 		}
 	}
 	else
 	{
 		for (int32 i = 0; i < enemyLifeSpotlight.Num(); i++) {
-			if(enemyLifeSpotlight[i]->spotLight->GetLightColor() == color) continue;
+			/*if(enemyLifeSpotlight[i]->spotLight->GetLightColor() == color) continue;
 			else
 			{
 				enemyLifeSpotlight[i]->spotLight->SetLightColor(color);
 				break;
-			}
+			}*/
 		}
 	}
 }

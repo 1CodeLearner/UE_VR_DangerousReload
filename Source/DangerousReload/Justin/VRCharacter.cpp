@@ -158,7 +158,6 @@ void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 	EnhancedInput->BindAction(IA_RHandTriggerPress, ETriggerEvent::Started, this, &AVRCharacter::OnRightTrigger);
 
-
 	EnhancedInput->BindAction(IA_RThumbAButtonPress, ETriggerEvent::Started, this, &AVRCharacter::RackPistol);
 }
 
