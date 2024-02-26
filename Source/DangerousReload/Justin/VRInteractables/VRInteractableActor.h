@@ -35,11 +35,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Interactable")
 	TObjectPtr<USkeletalMeshComponent> SKMComp;
 
+	bool bIsItem;
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 protected:
 	UPROPERTY()
-	TObjectPtr<ADVRGameModeBase> GameMode; 
+	TObjectPtr<ADVRGameModeBase> GameMode;
 };

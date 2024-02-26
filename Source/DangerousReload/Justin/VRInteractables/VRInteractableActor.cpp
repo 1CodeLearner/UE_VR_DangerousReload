@@ -32,6 +32,8 @@ AVRInteractableActor::AVRInteractableActor()
 	SKMComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SKMComp->SetRelativeLocation(FVector(0.0, 0.0, -50));
 	SKMComp->SetSimulatePhysics(false);
+
+	bIsItem = true;
 }
 
 void AVRInteractableActor::PostInitializeComponents()

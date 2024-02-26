@@ -11,12 +11,11 @@
 #include "JINA/CSpotLightActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/SpotLightComponent.h"
-
+#include "Justin/VRInteractables/VRInteractableActor_Pistol.h"
 
 ADVRGameModeBase::ADVRGameModeBase()
 {
 	MatchCount = 0;
-	bCanFire = false;
 	bMatchOver = false;
 }
 
@@ -37,6 +36,14 @@ void ADVRGameModeBase::InitGame(const FString& MapName, const FString& Options, 
 		if (!Enemy)
 		{
 			Enemy = *Iter;
+		}
+	}
+
+	for (TActorIterator<AVRInteractableActor_Pistol> Iter(GetWorld()); Iter; ++Iter)
+	{
+		if (!Pistol)
+		{
+			Pistol= *Iter;
 		}
 	}
 }
@@ -76,7 +83,6 @@ void ADVRGameModeBase::StartMatch()
 	}
 
 	isPlayerTurn = true;
-	bCanFire = true;
 	OnMatchStart.Broadcast();
 }
 
@@ -91,8 +97,8 @@ void ADVRGameModeBase::OnFired(AActor* ActorInstigator, AActor* ActorAimed, bool
 			HealthComp->InflictDamage();
 			if (HealthComp->IsDead())
 			{
-				HealthComp->OnDead.Broadcast();
 				bMatchOver = true;
+				HealthComp->OnDead.Broadcast();
 			}
 			else {
 				HealthComp->OnHealthChanged.Broadcast(true, HealthComp->GetMaxHealth());
@@ -152,5 +158,13 @@ void ADVRGameModeBase::ChangeLifeLightColor(ACharacter* target, FLinearColor col
 				break;
 			}
 		}
+	}
+}
+
+void ADVRGameModeBase::RespawnPistol()
+{
+	if (ensure(Pistol) && Pistol->IsRoundsEmpty())
+	{
+		Pistol->Reload();
 	}
 }

@@ -25,6 +25,8 @@ public:
 	virtual void OnInteract(AActor* InstigatorA) override;
 
 	void RackPistol();
+	bool IsRoundsEmpty() const;
+	void Reload();
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Pistol")

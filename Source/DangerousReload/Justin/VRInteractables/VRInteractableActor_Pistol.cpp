@@ -12,6 +12,7 @@ AVRInteractableActor_Pistol::AVRInteractableActor_Pistol()
 {
 	RoundCounter = 0;
 	bCanFire = true;
+	bIsItem = false;
 }
 
 void AVRInteractableActor_Pistol::PostInitializeComponents()
@@ -89,7 +90,17 @@ void AVRInteractableActor_Pistol::RackPistol()
 	}
 }
 
+bool AVRInteractableActor_Pistol::IsRoundsEmpty() const
+{
+	return RoundCounter >= Rounds.Num();
+}
+
 void AVRInteractableActor_Pistol::OnMatchStart()
+{
+	Reload();
+}
+
+void AVRInteractableActor_Pistol::Reload()
 {
 	int32 totalRounds = FMath::RandRange(2, 8);
 	int32 liveRounds = totalRounds;// / 2;
@@ -135,7 +146,6 @@ void AVRInteractableActor_Pistol::OnMatchStart()
 	bCanFire = true;
 	RoundCounter = 0;
 }
-
 
 void AVRInteractableActor_Pistol::FindActorInLOS()
 {

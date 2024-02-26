@@ -14,6 +14,8 @@ DECLARE_MULTICAST_DELEGATE(FMatchStartDelegate);
 
 class AVRCharacter;
 class ACEnemy;
+class AVRInteractableActor;
+class AVRInteractableActor_Pistol;
 
 USTRUCT(BlueprintType)
 struct FRound : public FTableRowBase
@@ -61,12 +63,18 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Settings")
 	TObjectPtr<UDataTable> DT_Matches;
 
+	void RespawnPistol();
+
 private:
 	int MatchCount;
-	bool bCanFire;
 	bool bMatchOver;
-
+	UPROPERTY()
 	TObjectPtr<AVRCharacter> Player;
+	UPROPERTY()
 	TObjectPtr<ACEnemy> Enemy;
+	UPROPERTY()
+	TObjectPtr<AVRInteractableActor_Pistol> Pistol;
+	UPROPERTY(EditDefaultsOnly, Category = "My Settings")
+	TArray<TSubclassOf<AVRInteractableActor>> ItemClasses;
 	AActor* CurrentTurn;
 };
