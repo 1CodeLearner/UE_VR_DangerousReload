@@ -70,6 +70,7 @@ protected:
 private:
 	int MatchCount;
 	bool bCanFire;
+	bool bMatchOver;
 
 	TObjectPtr<AVRCharacter> Player;
 	TObjectPtr<ACEnemy> Enemy;

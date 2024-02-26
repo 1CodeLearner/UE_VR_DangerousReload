@@ -83,18 +83,16 @@ void AVRCharacter::BeginPlay()
 		}
 	}
 
-	UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Eye);
+	UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Floor);
 
 	HealthComp->OnHealthChanged.AddUObject(this, &AVRCharacter::OnHealthChange);
-
+	HealthComp->OnDead.AddUObject(this, &AVRCharacter::OnDead);
 }
 
 // Called every frame
 void AVRCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-
 
 	//If no interacting actor
 	if (bIsGripping && !RInteractingActor)
@@ -159,7 +157,7 @@ void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 	EnhancedInput->BindAction(IA_RHandTriggerPress, ETriggerEvent::Started, this, &AVRCharacter::OnRightTrigger);
 
-	
+
 	EnhancedInput->BindAction(IA_RThumbAButtonPress, ETriggerEvent::Started, this, &AVRCharacter::RackPistol);
 }
 
@@ -175,7 +173,6 @@ void AVRCharacter::OnRightTrigger(const FInputActionValue& Value)
 		auto temp = Cast<IVRInteractInterface>(RInteractingActor);
 		if (temp)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("%s(%d) - OnRightTrigger Input"), *FString(__FUNCTION__), __LINE__);
 			temp->OnInteract(this);
 		}
 	}
@@ -190,20 +187,22 @@ void AVRCharacter::OnHealthChange(bool bDamaged, int HealthRemaining)
 		{
 			PC->PlayerCameraManager->StartCameraFade(0, 1, .01f, FColor::Black, false, true);
 			FTimerHandle Handle;
-			if (HealthComp->IsDead())
-			{
-
-				GetWorld()->GetTimerManager().SetTimer(Handle, this, &AVRCharacter::GameOver, 2.f, false);
-			}
-			else
-			{
-				GetWorld()->GetTimerManager().SetTimer(Handle, this, &AVRCharacter::FadeOut, 2.f, false);
-			}
+			GetWorld()->GetTimerManager().SetTimer(Handle, this, &AVRCharacter::FadeOut, 2.f, false);
 		}
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Recovered: %d"), HealthRemaining);
+	}
+}
+
+void AVRCharacter::OnDead()
+{
+	if (PC)
+	{
+		PC->PlayerCameraManager->StartCameraFade(0, 1, .01f, FColor::Black, false, true);
+		FTimerHandle Handle;
+		GetWorld()->GetTimerManager().SetTimer(Handle, this, &AVRCharacter::GameOver, 2.f, false);
 	}
 }
 
@@ -223,9 +222,6 @@ void AVRCharacter::FadeOut()
 
 void AVRCharacter::GameOver()
 {
-	if (PC)
-	{
-		PC->PlayerCameraManager->StartCameraFade(1, 0, 2.f, FColor::Black);
-	}
+	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Blue, FString::Printf(TEXT("Player is Dead")));
 }
 

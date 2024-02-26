@@ -29,9 +29,8 @@ void UVRHealthComponent::InflictDamage()
 	//if dead, return
 	if (!ensure(!IsDead()))
 		return;
-
+	
 	MaxHealth--;
-	OnHealthChanged.Broadcast(true, MaxHealth);
 }
 
 void UVRHealthComponent::RecoverHealth()
@@ -41,8 +40,9 @@ void UVRHealthComponent::RecoverHealth()
 		return;
 
 	MaxHealth++;
-	OnHealthChanged.Broadcast(false, MaxHealth);
 }
+
+
 
 void UVRHealthComponent::SetMaxHealth(const int Health)
 {
@@ -53,5 +53,10 @@ void UVRHealthComponent::SetMaxHealth(const int Health)
 bool UVRHealthComponent::IsDead() const
 {
 	return MaxHealth <= 0;
+}
+
+int UVRHealthComponent::GetMaxHealth() const
+{
+	return MaxHealth;
 }
 

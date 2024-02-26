@@ -96,7 +96,9 @@ protected:
 	UFUNCTION()
 	void OnRightTrigger(const FInputActionValue& Value);
 
+	//Delegates
 	void OnHealthChange(bool bDamaged, int HealthRemaining);
+	void OnDead();
 
 	void RackPistol();
 

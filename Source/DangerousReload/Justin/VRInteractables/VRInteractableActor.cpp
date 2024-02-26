@@ -71,9 +71,6 @@ void AVRInteractableActor::OnPickup(AActor* InstigatorA)
 	SetOwner(InstigatorA);
 }
 
-
-
-
 void AVRInteractableActor::OnRelease(AActor* InstigatorA)
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnRelease invoked"));

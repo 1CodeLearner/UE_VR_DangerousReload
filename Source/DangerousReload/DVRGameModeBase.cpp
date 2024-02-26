@@ -17,6 +17,7 @@ ADVRGameModeBase::ADVRGameModeBase()
 {
 	MatchCount = 0;
 	bCanFire = false;
+	bMatchOver = false;
 }
 
 void ADVRGameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
@@ -85,8 +86,18 @@ void ADVRGameModeBase::OnFired(AActor* ActorInstigator, AActor* ActorAimed, bool
 	if (bIsLiveRound)
 	{
 		UVRHealthComponent* HealthComp = ActorAimed->GetComponentByClass<UVRHealthComponent>();
-		if (ensure(HealthComp))
+		if (ensure(HealthComp)) 
+		{
 			HealthComp->InflictDamage();
+			if (HealthComp->IsDead())
+			{
+				HealthComp->OnDead.Broadcast();
+				bMatchOver = true;
+			}
+			else {
+				HealthComp->OnHealthChanged.Broadcast(true, HealthComp->GetMaxHealth());
+			}
+		}
 
 		ACharacter* CharacterHit = Cast<ACharacter>(ActorAimed);
 		if (CharacterHit)

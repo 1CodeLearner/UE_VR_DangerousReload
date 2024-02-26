@@ -5,6 +5,8 @@
 
 #include "DangerousReload/DVRGameModeBase.h"
 
+//static TAutoConsoleVariable<bool> CVarMaxLiveRounds(TEXT("jk.MaxLiveRounds"), false, TEXT("Set all rounds to live rounds")
+
 AVRInteractableActor_Pistol::AVRInteractableActor_Pistol()
 {
 	RoundCounter = 0;
@@ -23,7 +25,6 @@ void AVRInteractableActor_Pistol::PostInitializeComponents()
 void AVRInteractableActor_Pistol::BeginPlay()
 {
 	Super::BeginPlay();
-
 }
 
 void AVRInteractableActor_Pistol::Tick(float DeltaTime)
@@ -72,7 +73,7 @@ void AVRInteractableActor_Pistol::OnInteract(AActor* InstigatorA)
 void AVRInteractableActor_Pistol::OnMatchStart()
 {
 	int32 totalRounds = FMath::RandRange(2, 8);
-	int32 liveRounds = totalRounds / 2;
+	int32 liveRounds = totalRounds;// / 2;
 
 	int32 operations = FMath::RandRange(0, 2);
 	if (totalRounds > 4)
