@@ -4,12 +4,14 @@
 #include "VRInteractableActor_Pistol.h"
 
 #include "DangerousReload/DVRGameModeBase.h"
+#include "Kismet/GameplayStatics.h"
 
 //static TAutoConsoleVariable<bool> CVarMaxLiveRounds(TEXT("jk.MaxLiveRounds"), false, TEXT("Set all rounds to live rounds")
 
 AVRInteractableActor_Pistol::AVRInteractableActor_Pistol()
 {
 	RoundCounter = 0;
+	bCanFire = true;
 }
 
 void AVRInteractableActor_Pistol::PostInitializeComponents()
@@ -30,9 +32,9 @@ void AVRInteractableActor_Pistol::BeginPlay()
 void AVRInteractableActor_Pistol::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (GetOwner())
+	if (bCanFire && GetOwner())
 	{
-		CheckCanFire();
+		FindActorInLOS();
 	}
 	for (int i = 0; i < Rounds.Num(); ++i)
 	{
@@ -54,19 +56,36 @@ void AVRInteractableActor_Pistol::OnRelease(AActor* InstigatorA)
 void AVRInteractableActor_Pistol::OnInteract(AActor* InstigatorA)
 {
 	Super::OnInteract(InstigatorA);
-	if (SKMComp)
+	if (ActorInLOS && bCanFire)
 	{
-		if (ensureAlways(GameMode) && GameMode->CanFire() && ActorInLOS)
+		if (ensureAlways(RoundCounter < Rounds.Num()))
 		{
-			if (ensureAlways(RoundCounter < Rounds.Num()) && Rounds[RoundCounter])
+			if (Rounds[RoundCounter])
 			{
 				SKMComp->PlayAnimation(FireSequenceAnim, false);
 			}
-
+			else
+			{
+				UGameplayStatics::PlaySoundAtLocation(GetOwner(), EmptyGunSound, GetOwner()->GetActorLocation(), FRotator::ZeroRotator);
+			}
 			GameMode->OnFired(GetOwner(), ActorInLOS, Rounds[RoundCounter]);
-
-			RoundCounter++;
 		}
+		else
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetOwner(), EmptyGunSound, GetOwner()->GetActorLocation(), FRotator::ZeroRotator);
+		}
+		bCanFire = false;
+	}
+}
+
+void AVRInteractableActor_Pistol::RackPistol()
+{
+	bCanFire = true;
+	RoundCounter++;
+
+	if (ensure(RackingSound))
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetOwner(), RackingSound, GetOwner()->GetActorLocation(), FRotator::ZeroRotator);
 	}
 }
 
@@ -113,10 +132,12 @@ void AVRInteractableActor_Pistol::OnMatchStart()
 	} while (Counter != LiveRounds);
 
 	GameMode->bulletCount = totalRounds;
+	bCanFire = true;
+	RoundCounter = 0;
 }
 
 
-void AVRInteractableActor_Pistol::CheckCanFire()
+void AVRInteractableActor_Pistol::FindActorInLOS()
 {
 	FVector Start = GetActorLocation();
 	FVector End = Start + GetActorRightVector() * 20000.f;

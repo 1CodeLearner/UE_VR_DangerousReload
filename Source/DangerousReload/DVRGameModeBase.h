@@ -42,8 +42,7 @@ public:
 
 	void OnFired(AActor* ActorInstigator, AActor* ActorHit, bool bIsLiveRound);
 
-	bool CanFire() const;
-	void SetCanFire(bool _bCanFire);
+	bool IsMatchOver() const;
 
 	UPROPERTY(EditAnywhere, Category = "My Settings")
 	TArray<class ACSpotLightActor*> playerLifeSpotlight;
@@ -60,12 +59,7 @@ public:
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Settings")
-	TObjectPtr<UDataTable> DT_Rounds;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Settings")
-	TObjectPtr<USoundBase> RackingSound;
-	UPROPERTY(EditDefaultsOnly, Category = "Settings")
-	TObjectPtr<USoundBase> EmptyGunSound;
+	TObjectPtr<UDataTable> DT_Matches;
 
 private:
 	int MatchCount;

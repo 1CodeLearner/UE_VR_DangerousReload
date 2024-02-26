@@ -15,6 +15,7 @@
 #include "VRHealthComponent.h"
 #include "DangerousReload/DVRGameModeBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "VRInteractables/VRInteractableActor_Pistol.h"
 
 // Sets default values
 AVRCharacter::AVRCharacter()
@@ -208,8 +209,11 @@ void AVRCharacter::OnDead()
 
 void AVRCharacter::RackPistol()
 {
-	auto GM = GetWorld()->GetAuthGameMode<ADVRGameModeBase>();
-	GM->SetCanFire(true);
+	auto Pistol = Cast<AVRInteractableActor_Pistol>(RInteractingActor);
+	if (Pistol) 
+	{
+		Pistol->RackPistol();
+	}
 }
 
 void AVRCharacter::FadeOut()

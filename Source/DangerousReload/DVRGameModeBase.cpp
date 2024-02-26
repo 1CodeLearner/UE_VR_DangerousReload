@@ -49,11 +49,11 @@ void ADVRGameModeBase::BeginPlay()
 
 void ADVRGameModeBase::StartMatch()
 {
-	if (ensure(DT_Rounds))
+	if (ensure(DT_Matches))
 	{
-		TArray<FName> Names = DT_Rounds->GetRowNames();
+		TArray<FName> Names = DT_Matches->GetRowNames();
 		const TCHAR* Context = TEXT("Context");
-		FRound* Round = DT_Rounds->FindRow<FRound>(Names[MatchCount], Context);
+		FRound* Match = DT_Matches->FindRow<FRound>(Names[MatchCount], Context);
 		MatchCount++;
 
 		if (Player)
@@ -61,7 +61,7 @@ void ADVRGameModeBase::StartMatch()
 			auto PlayerHealth = Player->GetComponentByClass<UVRHealthComponent>();
 			if (ensure(PlayerHealth))
 			{
-				PlayerHealth->SetMaxHealth(Round->Health);
+				PlayerHealth->SetMaxHealth(Match->Health);
 			}
 		}
 		if (Enemy)
@@ -70,7 +70,7 @@ void ADVRGameModeBase::StartMatch()
 
 			if (ensure(EnemyHealth))
 			{
-				EnemyHealth->SetMaxHealth(Round->Health);
+				EnemyHealth->SetMaxHealth(Match->Health);
 			}
 		}
 	}
@@ -122,24 +122,12 @@ void ADVRGameModeBase::OnFired(AActor* ActorInstigator, AActor* ActorAimed, bool
 		{
 			CurrentTurn = ActorAimed;
 		}
-		UGameplayStatics::PlaySoundAtLocation(Player, EmptyGunSound, Player->GetActorLocation(), FRotator::ZeroRotator);
 	}
-
-	bCanFire = false;
 }
 
-bool ADVRGameModeBase::CanFire() const
+bool ADVRGameModeBase::IsMatchOver() const
 {
-	return bCanFire;
-}
-
-void ADVRGameModeBase::SetCanFire(bool _bCanFire)
-{
-	bCanFire = _bCanFire;
-	if(ensure(RackingSound))
-	{
-		UGameplayStatics::PlaySoundAtLocation(Player, RackingSound, Player->GetActorLocation(), FRotator::ZeroRotator);
-	}
+	return bMatchOver;
 }
 
 void ADVRGameModeBase::ChangeLifeLightColor(ACharacter* target, FLinearColor color)

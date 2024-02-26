@@ -100,7 +100,6 @@ protected:
 	void OnHealthChange(bool bDamaged, int HealthRemaining);
 	void OnDead();
 
-	void RackPistol();
 
 private:
 	bool bIsGripping;
@@ -115,4 +114,6 @@ private:
 	void FadeOut();
 	UFUNCTION()
 	void GameOver();
+
+	void RackPistol();
 };
