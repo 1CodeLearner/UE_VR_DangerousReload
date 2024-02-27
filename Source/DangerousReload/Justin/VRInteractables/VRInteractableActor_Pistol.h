@@ -37,7 +37,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Settings")
 	TObjectPtr<USoundBase> EmptyGunSound;
 
-private:
+public:
 	bool bCanFire;
 	void FindActorInLOS();
 	UPROPERTY()

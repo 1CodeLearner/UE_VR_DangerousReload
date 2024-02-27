@@ -26,19 +26,19 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UPROPERTY(VisibleAnywhere, Category="MySettings")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="MySettings")
 	class USphereComponent* sphereComp;
 
-	UPROPERTY(VisibleAnywhere, Category = "MySettings")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MySettings")
 	class UStaticMeshComponent* meshComp;
 
-	UPROPERTY(VisibleAnywhere, Category = "MySettings")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MySettings")
 	class USkeletalMeshComponent* rightComp;
 
-	UPROPERTY(VisibleAnywhere, Category = "MySettings")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MySettings")
 	class USkeletalMeshComponent* leftComp;
 
-	UPROPERTY(VisibleAnywhere, Category = "MySettings")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MySettings")
 	class UStaticMeshComponent* backComp;
 
 	class ADVRGameModeBase* gameMode;
@@ -48,6 +48,7 @@ public:
 	float life = 4;
 	class AVRInteractableActor* currentObject;
 	class ACharacter* player;
+	FVector faceLocation;
 
 	UPROPERTY(VisibleAnywhere, Category = "MySettings")
 	class UVRHealthComponent* HealthComp;

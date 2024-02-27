@@ -52,15 +52,16 @@ void AVRInteractableActor::OnPickup(AActor* InstigatorA)
 	//bIsPhysicsEnabled = CVarTestPhysics.GetValueOnGameThread();
 	GrabbableBoxComponent->SetSimulatePhysics(bIsPhysicsEnabled);
 
-	auto VRCharacter = Cast<AVRCharacter>(InstigatorA);
+	AVRCharacter* VRCharacter = Cast<AVRCharacter>(InstigatorA);
 	if (VRCharacter != nullptr)
 	{
 		AttachToComponent(VRCharacter->RHandSKMComp, FAttachmentTransformRules::KeepWorldTransform);
 	}
 	else {
-		auto Enemy = Cast<ACEnemy>(InstigatorA);
+		ACEnemy* Enemy = Cast<ACEnemy>(InstigatorA);
 		if (Enemy != nullptr)
 		{
+			GrabbableBoxComponent->SetSimulatePhysics(true);
 			AttachToComponent(Enemy->rightComp, FAttachmentTransformRules::KeepWorldTransform);
 		}
 	}

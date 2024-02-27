@@ -35,7 +35,7 @@ class DANGEROUSRELOAD_API ADVRGameModeBase : public AGameModeBase
 public:
 	FMatchStartDelegate OnMatchStart; 
 
-	bool isPlayerTurn = false;
+	bool isPlayerTurn = true;
 	int bulletCount;
 
 	void StartMatch();
@@ -61,7 +61,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Settings")
 	TObjectPtr<UDataTable> DT_Matches;
 
-private:
+public:
 	int MatchCount;
 	bool bCanFire;
 	bool bMatchOver;
