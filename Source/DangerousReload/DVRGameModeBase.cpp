@@ -46,7 +46,7 @@ void ADVRGameModeBase::BeginPlay()
 	StartMatch();
 
 	TArray<ACSpotLightActor*> lifeLight;
-	for (TObjectIterator<ACSpotLightActor> it; it; ++it) {
+	for (TActorIterator<ACSpotLightActor> it(GetWorld()); it; ++it) {
 		lifeLight.Add(*it);
 	}
 	for (int32 i = 0; i < 4; ++i)

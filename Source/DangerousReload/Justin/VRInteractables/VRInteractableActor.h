@@ -42,4 +42,7 @@ public:
 protected:
 	UPROPERTY()
 	TObjectPtr<ADVRGameModeBase> GameMode; 
+
+private:
+	AActor* ParentActor;
 };

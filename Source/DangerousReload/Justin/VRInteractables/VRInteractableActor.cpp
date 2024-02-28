@@ -61,12 +61,28 @@ void AVRInteractableActor::OnPickup(AActor* InstigatorA)
 		ACEnemy* Enemy = Cast<ACEnemy>(InstigatorA);
 		if (Enemy != nullptr)
 		{
-			GrabbableBoxComponent->SetSimulatePhysics(true);
 			AttachToComponent(Enemy->rightComp, FAttachmentTransformRules::KeepWorldTransform);
 		}
 	}
 
 	SetOwner(InstigatorA);
+
+
+	//if (ParentActor == nullptr)
+	//{
+	//	ParentActor = InstigatorA;
+	//	//UE_LOG(LogTemp, Warning, TEXT("Instigator: %s"), *ParentActor->GetActorNameOrLabel());
+
+	//	/*FVector vec = ParentActor->GetActorLocation();
+	//	SetActorLocation(vec);
+	//	UE_LOG(LogTemp, Warning, TEXT("%.2f, %.2f, %.2f"), vec.X, vec.Y, vec.Z);*/
+	//	if (ACEnemy* enemy = Cast<ACEnemy>(InstigatorA))
+	//	{
+	//		GrabbableBoxComponent->SetSimulatePhysics(false);
+	//		AttachToComponent(enemy->rightComp, FAttachmentTransformRules::KeepWorldTransform);
+	//	}
+	//	
+	//}
 }
 
 

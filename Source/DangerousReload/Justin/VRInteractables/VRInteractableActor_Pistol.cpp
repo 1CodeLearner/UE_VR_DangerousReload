@@ -34,7 +34,7 @@ void AVRInteractableActor_Pistol::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	if (bCanFire && GetOwner())
 	{
-		FindActorInLOS();
+		//FindActorInLOS();
 	}
 	for (int i = 0; i < Rounds.Num(); ++i)
 	{

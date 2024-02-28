@@ -7,6 +7,7 @@
 #include <Kismet/GameplayStatics.h>
 #include "../Justin/VRInteractables/VRInteractableActor_Pistol.h"
 #include "../Justin/VRHealthComponent.h"
+#include "EngineUtils.h"
 
 // Sets default values
 ACEnemy::ACEnemy()
@@ -85,9 +86,15 @@ void ACEnemy::BeginPlay()
 	currBulletCount = gameMode->bulletCount;
 	fakeBulletCount = currBulletCount / 2;
 	player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-	for (TObjectIterator<AVRInteractableActor_Pistol> it; it; ++it) {
-		gun = Cast<AVRInteractableActor_Pistol>(*it);
-		if(gun != nullptr) break;
+
+	for (TActorIterator<AVRInteractableActor_Pistol> it(GetWorld()); it; ++it) 
+	{
+		gun = *it;
+		if (gun != nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Gun: %s"), *gun->GetActorNameOrLabel());
+			break;
+		}
 	}
 
 	HealthComp->OnHealthChanged.AddUObject(this, &ACEnemy::OnHealthChanged);
@@ -212,13 +219,15 @@ void ACEnemy::MoveToGun()
 
 void ACEnemy::ReturnToBody(ACharacter* target)
 {
-	rightComp->SetWorldLocation(rightComp->GetComponentLocation() + (this->GetActorLocation() + FVector(70, 20, -10) - rightComp->GetComponentLocation()).GetSafeNormal());
-	if (FVector::Distance(this->GetActorLocation(), rightComp->GetComponentLocation()) < 30)
+	if (FVector::Distance(this->GetActorLocation(), rightComp->GetComponentLocation()) < 100)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Time to shot"));
 		ShotGun(target);
 	}
+	else {
+		rightComp->SetWorldLocation(rightComp->GetComponentLocation() + (this->GetActorLocation() + FVector(70, 20, -10) - rightComp->GetComponentLocation()).GetSafeNormal());
+	}
 }
+
 
 void ACEnemy::Shoot(ACharacter* target)
 {
@@ -233,13 +242,10 @@ void ACEnemy::Shoot(ACharacter* target)
 
 void ACEnemy::ShotGun(ACharacter* target)
 {
-	rightComp->SetRelativeRotation(FRotator(target->GetActorRotation().Yaw, target->GetActorRotation().Roll * -1, target->GetActorRotation().Pitch));
-	// gun->shoot
-	gun->FindActorInLOS();
-	if (gun->ActorInLOS != nullptr)
-	{
-		gun->OnInteract(target);
-	}
+	rightComp->SetRelativeRotation(FRotator(target->GetActorRotation().Pitch, target->GetActorRotation().Yaw * -1, target->GetActorRotation().Roll));
+	gun->SetActorRelativeRotation(rightComp->GetComponentRotation());
+	 /*gun->shoot*/
+	gun->OnInteract(target);
 }
 
 void ACEnemy::OnHealthChanged(bool bDamaged, int HealthRemaining)
