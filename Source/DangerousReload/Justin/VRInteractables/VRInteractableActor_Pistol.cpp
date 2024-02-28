@@ -3,40 +3,27 @@
 
 #include "VRInteractableActor_Pistol.h"
 
-#include "DangerousReload/DVRGameModeBase.h"
+#include "DangerousReload/DVRgameModeBase.h"
 #include "Kismet/GameplayStatics.h"
-#include "../../DVRGameModeBase.h"
+#include "../../DVRgameModeBase.h"
+#include "../BFL_Logging.h"
 
 //static TAutoConsoleVariable<bool> CVarMaxLiveRounds(TEXT("jk.MaxLiveRounds"), false, TEXT("Set all rounds to live rounds")
 
 AVRInteractableActor_Pistol::AVRInteractableActor_Pistol()
 {
 	RoundCounter = 0;
+	bIsActive = false;
 	bCanFire = true;
 	bIsItem = false;
-}
-
-void AVRInteractableActor_Pistol::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-
-	GameMode = GetWorld()->GetAuthGameMode<ADVRGameModeBase>();
-
-	if (ensure(GameMode) && GameState)
-	{
-		GameState->OnMatchStateChanged.AddUObject(this, &AVRInteractableActor_Pistol::OnMatchChanged);
-	}
-}
-
-void AVRInteractableActor_Pistol::BeginPlay()
-{
-	Super::BeginPlay();
+	bRacked = true;
+	bIsHeld = false;
 }
 
 void AVRInteractableActor_Pistol::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (bCanFire && GetOwner())
+	if (IsActive() && GetOwner())
 	{
 		FindActorInLOS();
 	}
@@ -47,20 +34,59 @@ void AVRInteractableActor_Pistol::Tick(float DeltaTime)
 	GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Magenta, FString::Printf(TEXT("CurrentRound: %d"), RoundCounter));
 }
 
+void AVRInteractableActor_Pistol::OnMatchChanged(EMatchState CurrentMatchState)
+{
+	Super::OnMatchChanged(CurrentMatchState);
+
+	if (CurrentMatchState == EMatchState::EMATCH_SwitchTurn)
+	{
+		bIsActive = false;
+	}
+	if (CurrentMatchState == EMatchState::EMATCH_OnGoing)
+	{
+		bIsActive = true;
+	}
+	if (CurrentMatchState == EMatchState::EMATCH_Start)
+	{
+		bIsActive = true;
+		Reload();
+	}
+}
+
 void AVRInteractableActor_Pistol::OnPickup(AActor* InstigatorA)
 {
-	Super::OnPickup(InstigatorA);
+	if (VRGameState->CurrentTurn == InstigatorA)
+	{
+		Super::OnPickup(InstigatorA);
+		if (RespawnHandle.IsValid())
+		{
+			GetWorld()->GetTimerManager().ClearTimer(RespawnHandle);
+		}
+		bIsHeld = true;
+	}
 }
 
 void AVRInteractableActor_Pistol::OnRelease(AActor* InstigatorA)
 {
-	Super::OnRelease(InstigatorA);
+	if (bIsHeld) 
+	{
+		Super::OnRelease(InstigatorA);
+		
+		UBFL_Logging::GEngineLog(FString::Printf(TEXT("Putting weapon back on the table...")));
+		if (RespawnHandle.IsValid())
+		{
+			GetWorld()->GetTimerManager().ClearTimer(RespawnHandle);
+		}
+		GetWorld()->GetTimerManager().SetTimer(RespawnHandle, this, &AVRInteractableActor_Pistol::RespawnWeapon, 2.f, false);
+
+		bIsHeld = false;
+	}
 }
 
 void AVRInteractableActor_Pistol::OnInteract(AActor* InstigatorA)
 {
 	Super::OnInteract(InstigatorA);
-	if (ActorInLOS && bCanFire)
+	if (IsActive() && ActorInLOS)
 	{
 		if (RoundCounter < Rounds.Num())
 		{
@@ -72,36 +98,34 @@ void AVRInteractableActor_Pistol::OnInteract(AActor* InstigatorA)
 			{
 				UGameplayStatics::PlaySoundAtLocation(GetOwner(), EmptyGunSound, GetOwner()->GetActorLocation(), FRotator::ZeroRotator);
 			}
-			GameMode->OnFired(GetOwner(), ActorInLOS, Rounds[RoundCounter]);
+			gameMode->OnFired(GetOwner(), ActorInLOS, Rounds[RoundCounter]);
 		}
 		else
 		{
 			UGameplayStatics::PlaySoundAtLocation(GetOwner(), EmptyGunSound, GetOwner()->GetActorLocation(), FRotator::ZeroRotator);
 		}
 		bCanFire = false;
+		bRacked = false;
 	}
 }
 
 void AVRInteractableActor_Pistol::RackPistol()
 {
-	bCanFire = true;
-	RoundCounter++;
+	if (!bRacked) {
+		bCanFire = true;
+		bRacked = true;
+		RoundCounter++;
 
-	if (ensure(RackingSound))
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetOwner(), RackingSound, GetOwner()->GetActorLocation(), FRotator::ZeroRotator);
+		if (ensure(RackingSound))
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetOwner(), RackingSound, GetOwner()->GetActorLocation(), FRotator::ZeroRotator);
+		}
 	}
 }
 
 bool AVRInteractableActor_Pistol::IsRoundsEmpty() const
 {
 	return RoundCounter >= Rounds.Num();
-}
-
-void AVRInteractableActor_Pistol::OnMatchChanged()
-{
-	if (GameState->MatchStateEnum == EMatchState::EMATCH_Start)
-		Reload();
 }
 
 void AVRInteractableActor_Pistol::Reload()
@@ -146,9 +170,14 @@ void AVRInteractableActor_Pistol::Reload()
 		}
 	} while (Counter != LiveRounds);
 
-	GameMode->bulletCount = totalRounds;
+	gameMode->bulletCount = totalRounds;
 	bCanFire = true;
 	RoundCounter = 0;
+}
+
+bool AVRInteractableActor_Pistol::IsActive() const
+{
+	return bIsActive && bCanFire;
 }
 
 void AVRInteractableActor_Pistol::FindActorInLOS()
@@ -190,4 +219,9 @@ void AVRInteractableActor_Pistol::FindActorInLOS()
 	ActorInLOS = nullptr;
 	DrawDebugLine(GetWorld(), Start, End, FColor::Blue, false, 2.f);
 
+}
+
+void AVRInteractableActor_Pistol::RespawnWeapon()
+{
+	OnWeaponDropped.Execute();
 }

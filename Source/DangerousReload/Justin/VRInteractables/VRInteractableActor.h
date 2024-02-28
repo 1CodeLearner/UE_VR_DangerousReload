@@ -19,12 +19,10 @@ class DANGEROUSRELOAD_API AVRInteractableActor : public AActor, public IVRIntera
 public:
 	// Sets default values for this actor's properties
 	AVRInteractableActor();
-	virtual void PostInitializeComponents() override;
+
 	virtual void OnPickup(AActor* InstigatorA) override;
 	virtual void OnRelease(AActor* InstigatorA) override;
 	virtual void OnInteract(AActor* InstigatorA) override;
-
-	class ADVRGameModeBase* gameMode;
 
 protected:
 	// Called when the game starts or when spawned
@@ -36,12 +34,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Interactable")
 	TObjectPtr<USkeletalMeshComponent> SKMComp;
 
-	bool bIsItem;
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 protected:
+
+	bool bIsItem;
+
 	UPROPERTY()
-	TObjectPtr<AVRGameStateBase> GameState;
+	TObjectPtr<AVRGameStateBase> VRGameState;
+	
+	UPROPERTY()
+	class ADVRGameModeBase* gameMode;
+
+	virtual void OnMatchChanged(EMatchState CurrentMatchState);
 };

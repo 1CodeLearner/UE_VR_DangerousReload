@@ -36,14 +36,26 @@ AVRInteractableActor::AVRInteractableActor()
 	bIsItem = true;
 }
 
-void AVRInteractableActor::PostInitializeComponents()
+void AVRInteractableActor::BeginPlay()
 {
-	Super::PostInitializeComponents();
+	Super::BeginPlay();
 	auto Temp = GetWorld()->GetAuthGameMode()->GetGameState<AVRGameStateBase>();
 	if (ensure(Temp))
 	{
-		GameState = Temp;
+		VRGameState = Temp;
 	}
+
+	gameMode = GetWorld()->GetAuthGameMode<ADVRGameModeBase>();
+
+	if (ensure(gameMode) && VRGameState)
+	{
+		VRGameState->OnMatchStateChanged.AddUObject(this, &AVRInteractableActor::OnMatchChanged);
+	}
+}
+
+void AVRInteractableActor::OnMatchChanged(EMatchState CurrentMatchState)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Match111111111"));
 }
 
 void AVRInteractableActor::OnPickup(AActor* InstigatorA)
@@ -89,15 +101,5 @@ void AVRInteractableActor::OnInteract(AActor* InstigatorA)
 	UE_LOG(LogTemp, Warning, TEXT("OnInteract invoked"));
 }
 
-// Called when the game starts or when spawned
-void AVRInteractableActor::BeginPlay()
-{
-	Super::BeginPlay();
-}
 
-// Called every frame
-void AVRInteractableActor::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
 

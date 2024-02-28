@@ -9,14 +9,17 @@
 /**
  *
  */
+
+ DECLARE_DELEGATE(FWeaponDroppedDelegate);
+
 UCLASS()
 class DANGEROUSRELOAD_API AVRInteractableActor_Pistol : public AVRInteractableActor
 {
 	GENERATED_BODY()
 public:
 	AVRInteractableActor_Pistol();
-	virtual void PostInitializeComponents() override;
-	virtual void BeginPlay() override;
+
+	FWeaponDroppedDelegate OnWeaponDropped;
 
 	virtual void Tick(float DeltaTime) override;
 
@@ -32,23 +35,33 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Pistol")
 	TObjectPtr<UAnimSequence> FireSequenceAnim;
 
-	void OnMatchChanged();
-
 	UPROPERTY(EditDefaultsOnly, Category = "Settings")
 	TObjectPtr<USoundBase> RackingSound;
 	UPROPERTY(EditDefaultsOnly, Category = "Settings")
 	TObjectPtr<USoundBase> EmptyGunSound;
 
+	virtual void OnMatchChanged(EMatchState CurrentMatchState) override;
+
 private:
+	bool IsActive() const;
+	//Changed by game & match states
+	bool bIsActive;
+	//Changed by handling the weapon
 	bool bCanFire;
-	void FindActorInLOS();
+	//Changed by Racking the weapon
+	bool bRacked;
+	//Check if player or enemy is currently holding the weapon
+	bool bIsHeld;
+
 	UPROPERTY()
 	AActor* ActorInLOS;
+	void FindActorInLOS();
 
 	int LiveRounds;
 	TArray<bool> Rounds;
 	int RoundCounter; 
 
-	UPROPERTY()
-	TObjectPtr<ADVRGameModeBase> GameMode;
+	FTimerHandle RespawnHandle;
+	UFUNCTION()
+	void RespawnWeapon();
 };

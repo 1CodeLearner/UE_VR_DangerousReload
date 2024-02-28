@@ -34,6 +34,12 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
 	TObjectPtr<USkeletalMeshComponent>  RHandSKMComp;
+	
+	UPROPERTY(VisibleAnywhere, Category = "VRSettings | Components")
+	UTextRenderComponent* LTextComp;
+
+	UPROPERTY(VisibleAnywhere, Category = "VRSettings | Components")
+	UTextRenderComponent* RTextComp;
 
 protected:
 	// Called when the game starts or when spawned
@@ -53,15 +59,11 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
 	TObjectPtr<USphereComponent> RCollisionComp;
-	UPROPERTY(VisibleAnywhere, Category = "VRSettings | Components")
-	UTextRenderComponent* RTextComp;
 
 	//LeftHand
 
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
 	TObjectPtr<USkeletalMeshComponent>  LHandSKMComp;
-	UPROPERTY(VisibleAnywhere, Category = "VRSettings | Components")
-	UTextRenderComponent* LTextComp;
 
 	//Inputs
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Input")

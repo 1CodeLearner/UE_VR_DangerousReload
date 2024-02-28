@@ -12,9 +12,11 @@
 #include "Components/SpotLightComponent.h"
 #include "Justin/VRInteractables/VRInteractableActor_Pistol.h"
 #include "VRGameStateBase.h"
+#include "Justin/BFL_Logging.h"
 
 ADVRGameModeBase::ADVRGameModeBase()
 {
+	isPlayerTurn = true;
 }
 void ADVRGameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
@@ -43,15 +45,6 @@ void ADVRGameModeBase::InitGame(const FString& MapName, const FString& Options, 
 			Pistol = *Iter;
 		}
 	}
-
-	auto Temp = GetGameState<AVRGameStateBase>();
-	if (ensure(Temp))
-	{
-		VRGameState = Temp;
-	}
-
-	VRGameState->GameStateEnum = EGameState::EGAME_Menu;
-	VRGameState->MatchStateEnum = EMatchState::EMATCH_Default;
 }
 
 void ADVRGameModeBase::BeginPlay()
@@ -59,16 +52,40 @@ void ADVRGameModeBase::BeginPlay()
 	Super::BeginPlay();
 
 	FTimerHandle Handle;
-	StartMatch();
+
+	auto Temp = GetGameState<AVRGameStateBase>();
+	if (ensure(Temp))
+	{
+		VRGameState = Temp;
+		VRGameState->GameStateEnum = EGameState::EGAME_Menu;
+		VRGameState->MatchStateEnum = EMatchState::EMATCH_Default;
+		VRGameState->OnMatchStateChanged.AddUObject(this, &ADVRGameModeBase::OnMatchStateChanged);
+	}
+
+	if (ensure(Pistol))
+	{
+		Pistol->OnWeaponDropped.BindUObject(this, &ADVRGameModeBase::RespawnPistol);
+		PistolRespawnTransform = Pistol->GetActorTransform();
+	}
+}
+
+
+void ADVRGameModeBase::OnMatchStateChanged(EMatchState CurrentMatchState)
+{
+	if (CurrentMatchState == EMatchState::EMATCH_Start)
+	{
+		FTimerHandle Handle;
+		GetWorld()->GetTimerManager().SetTimer(Handle, this, &ADVRGameModeBase::StartMatch, 2.f, false);
+	}
 }
 
 void ADVRGameModeBase::StartMatch()
 {
-	if (ensure(DT_Matches))
+	if (ensure(DT_Matches) && ensure(VRGameState))
 	{
 		TArray<FName> Names = DT_Matches->GetRowNames();
 		const TCHAR* Context = TEXT("Context");
-		FRound* Match = DT_Matches->FindRow<FRound>(Names[VRGameState->MatchCount], Context);
+		FRound* Match = DT_Matches->FindRow<FRound>(Names[VRGameState->GetMatchCount()], Context);
 
 		if (Player)
 		{
@@ -87,10 +104,10 @@ void ADVRGameModeBase::StartMatch()
 				EnemyHealth->SetMaxHealth(Match->Health);
 			}
 		}
-	}
 
-	isPlayerTurn = true;
-	VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_Start);
+		isPlayerTurn = true;
+		VRGameState->CurrentTurn = Player;
+	}
 }
 
 
@@ -104,7 +121,6 @@ void ADVRGameModeBase::OnFired(AActor* ActorInstigator, AActor* ActorAimed, bool
 			HealthComp->InflictDamage();
 			if (HealthComp->IsDead())
 			{
-				VRGameState->bMatchOver = true;
 				HealthComp->OnDead.Broadcast();
 			}
 			else {
@@ -127,20 +143,17 @@ void ADVRGameModeBase::OnFired(AActor* ActorInstigator, AActor* ActorAimed, bool
 		{
 			VRGameState->CurrentTurn = Player;
 		}
+		VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_SwitchTurn);
 	}
 	else
 	{
-		//Switch turn only if the blank was shot at other participant
+		//Switch turn only if a blank was shot at other participant
 		if (VRGameState->CurrentTurn != ActorAimed)
 		{
 			VRGameState->CurrentTurn = ActorAimed;
+			VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_SwitchTurn);
 		}
 	}
-}
-
-bool ADVRGameModeBase::IsMatchOver() const
-{
-	return VRGameState->bMatchOver;
 }
 
 void ADVRGameModeBase::ChangeLifeLightColor(ACharacter* target, FLinearColor color)
@@ -170,8 +183,11 @@ void ADVRGameModeBase::ChangeLifeLightColor(ACharacter* target, FLinearColor col
 
 void ADVRGameModeBase::RespawnPistol()
 {
-	if (ensure(Pistol) && Pistol->IsRoundsEmpty())
+	//Move Pistol to original Location
+	Pistol->SetActorTransform(PistolRespawnTransform);
+
+	if (VRGameState->MatchStateEnum == EMatchState::EMATCH_SwitchTurn)
 	{
-		Pistol->Reload();
+		VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_OnGoing);
 	}
 }

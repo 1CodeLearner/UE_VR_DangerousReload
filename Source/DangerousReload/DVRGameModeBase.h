@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "VRGameStateBase.h"
 #include "DVRGameModeBase.generated.h"
 
 /**
@@ -15,7 +16,6 @@ class AVRCharacter;
 class ACEnemy;
 class AVRInteractableActor;
 class AVRInteractableActor_Pistol;
-class AVRGameStateBase;
 
 USTRUCT(BlueprintType)
 struct FRound : public FTableRowBase
@@ -34,6 +34,14 @@ class DANGEROUSRELOAD_API ADVRGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 
+
+public:
+	ADVRGameModeBase();
+	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
+	virtual void BeginPlay() override;
+
+	void OnMatchStateChanged(EMatchState CurrentMatchState);
+
 public:
 	bool isPlayerTurn = false;
 	int bulletCount;
@@ -41,9 +49,6 @@ public:
 	void StartMatch();
 
 	void OnFired(AActor* ActorInstigator, AActor* ActorHit, bool bIsLiveRound);
-	
-
-	bool IsMatchOver() const;
 
 	UPROPERTY(EditAnywhere, Category = "My Settings")
 	TArray<class ACSpotLightActor*> playerLifeSpotlight;
@@ -51,11 +56,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "My Settings")
 	TArray<class ACSpotLightActor*> enemyLifeSpotlight;
 
-
-public:
-	ADVRGameModeBase();
-	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
-	virtual void BeginPlay() override;
 	void ChangeLifeLightColor(ACharacter* target, FLinearColor color);
 
 protected:
@@ -76,4 +76,7 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<AVRGameStateBase> VRGameState;
+
+	FTransform PistolRespawnTransform;
+
 };

@@ -13,27 +13,30 @@
 UENUM()
 enum class EMatchState : uint8
 {
-	EMATCH_Default UMETA(DisplayName="Default"),
-	EMATCH_Start UMETA(DisplayName="MatchStart"),
-	EMATCH_OnGoing UMETA(DisplayName="MatchOnGoing"),
-	EMATCH_SwitchTurn UMETA(DisplayName="MatchSwitchTurn"),
-	EMATCH_Reset UMETA(DisplayName="MatchReset"),
-	EMATCH_Stop UMETA(DisplayName = "MatchStop"),
+	EMATCH_Default UMETA(DisplayName = "Default"),
+	EMATCH_Menu UMETA(Displayname = "Menu"),
+	EMATCH_Start UMETA(DisplayName = "Start"),
+	EMATCH_OnGoing UMETA(DisplayName = "OnGoing"),
+	EMATCH_SwitchTurn UMETA(DisplayName = "SwitchTurn"),
+	EMATCH_RoundReset UMETA(DisplayName = "RoundReset"),
+	EMATCH_StageReset UMETA(DisplayName = "StageReset"),
+	EMATCH_Stop UMETA(DisplayName = "Stop"),
 };
 
 UENUM()
 enum class EGameState : uint8
 {
-	EGAME_Default UMETA(DisplayName="Default"),
-	EGAME_Menu UMETA(DisplayName="GameMenu"),
-	EGAME_Start UMETA(DisplayName="GameStart"),
-	EGAME_OnGoing UMETA(DisplayName="GameOnGoing"),
-	EGAME_Stop UMETA(DisplayName="GameStop")
+	EGAME_Default UMETA(DisplayName = "Default"),
+	EGAME_Menu UMETA(DisplayName = "GameMenu"),
+	EGAME_Start UMETA(DisplayName = "GameStart"),
+	EGAME_OnGoing UMETA(DisplayName = "GameOnGoing"),
+	EGAME_Reset UMETA(DisplayName = "GameReset"),
+	EGAME_Stop UMETA(DisplayName = "GameStop")
 };
 
 
-DECLARE_MULTICAST_DELEGATE(FMatchStateChangedDelegate);
-DECLARE_MULTICAST_DELEGATE(FGameStateChangedDelegate);
+DECLARE_MULTICAST_DELEGATE_OneParam(FMatchStateChangedDelegate, EMatchState CurrentMatchstate);
+DECLARE_MULTICAST_DELEGATE_OneParam(FGameStateChangedDelegate, EGameState CurrentGameState); //Not in use
 
 UCLASS()
 class DANGEROUSRELOAD_API AVRGameStateBase : public AGameStateBase
@@ -42,16 +45,26 @@ class DANGEROUSRELOAD_API AVRGameStateBase : public AGameStateBase
 public:
 	AVRGameStateBase();
 
+	virtual void Tick( float DeltaSeconds ) override;
+
+	EGameState GameStateEnum;
+	EMatchState MatchStateEnum;
 	FMatchStateChangedDelegate OnMatchStateChanged;
 	FGameStateChangedDelegate OnGameStateChanged;
+	void ChangeGameStateTo(EGameState GameState);
+	void ChangeMatchStateTo(EMatchState MatchState); //Not in use
 
-	bool bIsFirstTimePlaying;
-	bool bMatchOver;
+	bool IsPlaying() const;
+	int GetMatchCount() const;
+
 	AActor* CurrentTurn;
 
-	EGameState GameStateEnum; 
-	EMatchState MatchStateEnum;
+private:
+	bool bIsFirstTimePlaying;
+	bool bIsPlaying;
 
-	void ChangeGameStateTo(EGameState GameState);
-	void ChangeMatchStateTo(EMatchState MatchState);
+	int MatchCount;
+
+	FString GetBodyEnumAsString(EGameState value);
+	FString GetBodyEnumAsString(EMatchState value);
 };
