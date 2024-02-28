@@ -32,6 +32,7 @@ void AVRInteractableActor_Pistol::Tick(float DeltaTime)
 		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Magenta, FString::Printf(TEXT("Round%d: %s"), i, Rounds[i] ? TEXT("True") : TEXT("False")));
 	}
 	GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Magenta, FString::Printf(TEXT("CurrentRound: %d"), RoundCounter));
+	GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Magenta, FString::Printf(TEXT("Location: %s"), *GetActorLocation().ToString()));
 }
 
 void AVRInteractableActor_Pistol::OnMatchChanged(EMatchState CurrentMatchState)
@@ -55,7 +56,7 @@ void AVRInteractableActor_Pistol::OnMatchChanged(EMatchState CurrentMatchState)
 
 void AVRInteractableActor_Pistol::OnPickup(AActor* InstigatorA)
 {
-	if (VRGameState->CurrentTurn == InstigatorA)
+	if (VRGameState->GetCurrentTurn() == InstigatorA)
 	{
 		Super::OnPickup(InstigatorA);
 		if (RespawnHandle.IsValid())

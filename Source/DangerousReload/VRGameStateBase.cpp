@@ -16,7 +16,6 @@ AVRGameStateBase::AVRGameStateBase()
 	MatchCount = 0;
 	CurrentTurn = nullptr;
 
-	GameStateEnum = EGameState::EGAME_Default;
 	MatchStateEnum = EMatchState::EMATCH_Default;
 }
 
@@ -34,20 +33,25 @@ void AVRGameStateBase::Tick(float DeltaSeconds)
 	}
 }
 
-void AVRGameStateBase::ChangeGameStateTo(EGameState GameState)
-{
-	GameStateEnum = GameState;
-	if (GameStateEnum == EGameState::EGAME_Start)
-	{
-		bIsPlaying = true;
-	}
-	OnGameStateChanged.Broadcast(GameStateEnum);
-}
-
 void AVRGameStateBase::ChangeMatchStateTo(EMatchState MatchState)
 {
 	MatchStateEnum = MatchState;
 	OnMatchStateChanged.Broadcast(MatchStateEnum);
+}
+
+bool AVRGameStateBase::IsMatchState(EMatchState CheckMatchState)
+{
+	return MatchStateEnum == CheckMatchState;
+}
+
+AActor* AVRGameStateBase::GetCurrentTurn() const
+{
+	return CurrentTurn;
+}
+
+void AVRGameStateBase::SetCurrentTurn(AActor* ActorTurn)
+{
+	this->CurrentTurn = ActorTurn;
 }
 
 bool AVRGameStateBase::IsPlaying() const
@@ -58,14 +62,6 @@ bool AVRGameStateBase::IsPlaying() const
 int AVRGameStateBase::GetMatchCount() const
 {
 	return MatchCount;
-}
-
-FString AVRGameStateBase::GetBodyEnumAsString(EGameState value)
-{
-	const UEnum* EnumPtr = FindObject<UEnum>(ANY_PACKAGE, TEXT("EGameState"), true);
-	if (!EnumPtr) return FString("Invalid");
-
-	return EnumPtr->GetNameStringByIndex((int32)value);
 }
 
 FString AVRGameStateBase::GetBodyEnumAsString(EMatchState value)

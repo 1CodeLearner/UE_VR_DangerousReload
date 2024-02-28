@@ -36,7 +36,6 @@ enum class EGameState : uint8
 
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FMatchStateChangedDelegate, EMatchState CurrentMatchstate);
-DECLARE_MULTICAST_DELEGATE_OneParam(FGameStateChangedDelegate, EGameState CurrentGameState); //Not in use
 
 UCLASS()
 class DANGEROUSRELOAD_API AVRGameStateBase : public AGameStateBase
@@ -47,24 +46,24 @@ public:
 
 	virtual void Tick( float DeltaSeconds ) override;
 
-	EGameState GameStateEnum;
-	EMatchState MatchStateEnum;
 	FMatchStateChangedDelegate OnMatchStateChanged;
-	FGameStateChangedDelegate OnGameStateChanged;
-	void ChangeGameStateTo(EGameState GameState);
-	void ChangeMatchStateTo(EMatchState MatchState); //Not in use
+	void ChangeMatchStateTo(EMatchState MatchState);
+	bool IsMatchState(EMatchState CheckMatchState);
+	AActor* GetCurrentTurn() const;
+	void SetCurrentTurn(AActor* ActorTurn);
 
 	bool IsPlaying() const;
 	int GetMatchCount() const;
 
-	AActor* CurrentTurn;
 
 private:
 	bool bIsFirstTimePlaying;
 	bool bIsPlaying;
 
-	int MatchCount;
+	AActor* CurrentTurn;
 
-	FString GetBodyEnumAsString(EGameState value);
+	int MatchCount;
+	EMatchState MatchStateEnum;
+	
 	FString GetBodyEnumAsString(EMatchState value);
 };

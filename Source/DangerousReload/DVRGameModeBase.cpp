@@ -57,9 +57,8 @@ void ADVRGameModeBase::BeginPlay()
 	if (ensure(Temp))
 	{
 		VRGameState = Temp;
-		VRGameState->GameStateEnum = EGameState::EGAME_Menu;
-		VRGameState->MatchStateEnum = EMatchState::EMATCH_Default;
 		VRGameState->OnMatchStateChanged.AddUObject(this, &ADVRGameModeBase::OnMatchStateChanged);
+		VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_Menu);
 	}
 
 	if (ensure(Pistol))
@@ -106,7 +105,7 @@ void ADVRGameModeBase::StartMatch()
 		}
 
 		isPlayerTurn = true;
-		VRGameState->CurrentTurn = Player;
+		VRGameState->SetCurrentTurn(Player);
 	}
 }
 
@@ -137,20 +136,20 @@ void ADVRGameModeBase::OnFired(AActor* ActorInstigator, AActor* ActorAimed, bool
 		//Switch Turns regardless who was shot
 		if (ActorInstigator == Player)
 		{
-			VRGameState->CurrentTurn = Enemy;
+			VRGameState->SetCurrentTurn(Enemy);
 		}
 		else
 		{
-			VRGameState->CurrentTurn = Player;
+			VRGameState->SetCurrentTurn(Player);
 		}
 		VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_SwitchTurn);
 	}
 	else
 	{
 		//Switch turn only if a blank was shot at other participant
-		if (VRGameState->CurrentTurn != ActorAimed)
+		if (VRGameState->GetCurrentTurn() != ActorAimed)
 		{
-			VRGameState->CurrentTurn = ActorAimed;
+			VRGameState->SetCurrentTurn(ActorAimed);
 			VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_SwitchTurn);
 		}
 	}
@@ -186,7 +185,7 @@ void ADVRGameModeBase::RespawnPistol()
 	//Move Pistol to original Location
 	Pistol->SetActorTransform(PistolRespawnTransform);
 
-	if (VRGameState->MatchStateEnum == EMatchState::EMATCH_SwitchTurn)
+	if (VRGameState->IsMatchState(EMatchState::EMATCH_SwitchTurn))
 	{
 		VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_OnGoing);
 	}
