@@ -112,9 +112,10 @@ void ADVRGameModeBase::StartMatch()
 
 void ADVRGameModeBase::OnFired(AActor* ActorInstigator, AActor* ActorAimed, bool bIsLiveRound)
 {
+	UVRHealthComponent* HealthComp = ActorAimed->GetComponentByClass<UVRHealthComponent>();
+	//Handle Health
 	if (bIsLiveRound)
 	{
-		UVRHealthComponent* HealthComp = ActorAimed->GetComponentByClass<UVRHealthComponent>();
 		if (ensure(HealthComp))
 		{
 			HealthComp->InflictDamage();
@@ -122,7 +123,7 @@ void ADVRGameModeBase::OnFired(AActor* ActorInstigator, AActor* ActorAimed, bool
 			{
 				HealthComp->OnDead.Broadcast();
 			}
-			else 
+			else
 			{
 				HealthComp->OnHealthChanged.Broadcast(true, HealthComp->GetMaxHealth());
 
@@ -131,30 +132,42 @@ void ADVRGameModeBase::OnFired(AActor* ActorInstigator, AActor* ActorAimed, bool
 				{
 					ChangeLifeLightColor(CharacterHit, FLinearColor(0, 0, 0, 0));
 				}
-
-				if (ensure(Pistol) && !Pistol->IsRoundsEmpty()) 
-				{
-					//Switch Turns regardless who was shot
-					if (ActorInstigator == Player)
-					{
-						VRGameState->SetCurrentTurn(Enemy);
-					}
-					else
-					{
-						VRGameState->SetCurrentTurn(Player);
-					}
-					VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_SwitchTurn);
-				}
 			}
 		}
 	}
-	else
+
+	if (HealthComp->IsDead()) 
 	{
-		//Switch turn only if a blank was shot at other participant
-		if (VRGameState->GetCurrentTurn() != ActorAimed)
+		VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_Stop);
+	}
+	else if (!Pistol->CanFire())
+	{
+		VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_RoundReset);
+	}
+	else 
+	{
+		//Handle turns
+		if (bIsLiveRound)
 		{
-			VRGameState->SetCurrentTurn(ActorAimed);
+			//Switch Turns regardless who was shot
+			if (ActorInstigator == Player)
+			{
+				VRGameState->SetCurrentTurn(Enemy);
+			}
+			else
+			{
+				VRGameState->SetCurrentTurn(Player);
+			}
 			VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_SwitchTurn);
+		}
+		else
+		{
+			//Switch turn only if a blank was shot at other participant
+			if (VRGameState->GetCurrentTurn() != ActorAimed)
+			{
+				VRGameState->SetCurrentTurn(ActorAimed);
+				VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_SwitchTurn);
+			}
 		}
 	}
 }
@@ -191,6 +204,22 @@ void ADVRGameModeBase::RespawnPistol()
 
 	if (VRGameState->IsMatchState(EMatchState::EMATCH_SwitchTurn))
 	{
-		VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_OnGoing);
+		FTimerHandle Handle;
+		GetWorld()->GetTimerManager().SetTimer(Handle, this, &ADVRGameModeBase::SwitchTurns, 2.f, false);
 	}
+	else if (VRGameState->IsMatchState(EMatchState::EMATCH_RoundReset)) 
+	{
+		FTimerHandle Handle;
+		GetWorld()->GetTimerManager().SetTimer(Handle, this, &ADVRGameModeBase::RestartMatch, 2.f, false);
+	}
+}
+
+void ADVRGameModeBase::SwitchTurns()
+{
+	VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_OnGoing);
+}
+
+void ADVRGameModeBase::RestartMatch()
+{
+	VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_Start);
 }

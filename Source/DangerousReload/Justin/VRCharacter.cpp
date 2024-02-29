@@ -202,14 +202,16 @@ void AVRCharacter::OnDead()
 	if (PC)
 	{
 		PC->PlayerCameraManager->StartCameraFade(0, 1, .01f, FColor::Black, false, true);
+		
+		/*
 		FTimerHandle Handle;
-		GetWorld()->GetTimerManager().SetTimer(Handle, this, &AVRCharacter::GameOver, 2.f, false);
-		auto GameState = Cast<AVRGameStateBase>(UGameplayStatics::GetGameState(GetWorld()));
-		if (GameState) 
-		{
-			GameState->ChangeMatchStateTo(EMatchState::EMATCH_Stop);
+		GetWorld()->GetTimerManager().SetTimer(Handle, this, &AVRCharacter::GameOver, 2.f, false);*/
+		//auto GameState = Cast<AVRGameStateBase>(UGameplayStatics::GetGameState(GetWorld()));
+		//if (GameState) 
+		//{
+		//	GameState->ChangeMatchStateTo(EMatchState::EMATCH_Stop);
 
-		}
+		//}
 	}
 }
 

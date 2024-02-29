@@ -9,10 +9,11 @@
 #include "../BFL_Logging.h"
 
 static TAutoConsoleVariable<int> CVarMaxLiveRounds(TEXT("jk.ChangeRounds"), 8, TEXT("Adjust number of rounds in chamber"));
+static TAutoConsoleVariable<int> CVarOnlyBlanks(TEXT("jk.OnlyBlanks"), false, TEXT("All rounds are blanks"));
 
 AVRInteractableActor_Pistol::AVRInteractableActor_Pistol()
 {
-	RoundCounter = 0;
+	RoundsIndex = 0;
 	bIsActive = false;
 	bCanFire = true;
 	bIsItem = false;
@@ -31,7 +32,7 @@ void AVRInteractableActor_Pistol::Tick(float DeltaTime)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Magenta, FString::Printf(TEXT("Round%d: %s"), i, Rounds[i] ? TEXT("True") : TEXT("False")));
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Magenta, FString::Printf(TEXT("CurrentRound: %d"), RoundCounter));
+	GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Magenta, FString::Printf(TEXT("Rounds Fired: %d"), RoundsIndex));
 	GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Magenta, FString::Printf(TEXT("Location: %s"), *GetActorLocation().ToString()));
 }
 
@@ -39,18 +40,34 @@ void AVRInteractableActor_Pistol::OnMatchChanged(EMatchState CurrentMatchState)
 {
 	Super::OnMatchChanged(CurrentMatchState);
 
-	if (CurrentMatchState == EMatchState::EMATCH_SwitchTurn)
+	switch (CurrentMatchState)
+	{
+	case EMatchState::EMATCH_SwitchTurn:
 	{
 		bIsActive = false;
+		break;
 	}
-	if (CurrentMatchState == EMatchState::EMATCH_OnGoing)
+	case EMatchState::EMATCH_OnGoing:
 	{
 		bIsActive = true;
+		break;
 	}
-	if (CurrentMatchState == EMatchState::EMATCH_Start)
+	case EMatchState::EMATCH_Start:
 	{
 		bIsActive = true;
 		Reload();
+		break;
+	}
+	case EMatchState::EMATCH_Stop:
+	{
+		bIsActive = false;
+		break;
+	}
+	case EMatchState::EMATCH_RoundReset:
+	{
+		bIsActive = false;
+		break;
+	}
 	}
 }
 
@@ -69,10 +86,10 @@ void AVRInteractableActor_Pistol::OnPickup(AActor* InstigatorA)
 
 void AVRInteractableActor_Pistol::OnRelease(AActor* InstigatorA)
 {
-	if (bIsHeld) 
+	if (bIsHeld)
 	{
 		Super::OnRelease(InstigatorA);
-		
+
 		UBFL_Logging::GEngineLog(FString::Printf(TEXT("Putting weapon back on the table...")));
 		if (RespawnHandle.IsValid())
 		{
@@ -89,9 +106,9 @@ void AVRInteractableActor_Pistol::OnInteract(AActor* InstigatorA)
 	Super::OnInteract(InstigatorA);
 	if (IsActive() && ActorInLOS)
 	{
-		if (RoundCounter < Rounds.Num())
+		if (CanFire())
 		{
-			if (Rounds[RoundCounter])
+			if (Rounds[RoundsIndex])
 			{
 				SKMComp->PlayAnimation(FireSequenceAnim, false);
 			}
@@ -99,7 +116,8 @@ void AVRInteractableActor_Pistol::OnInteract(AActor* InstigatorA)
 			{
 				UGameplayStatics::PlaySoundAtLocation(GetOwner(), EmptyGunSound, GetOwner()->GetActorLocation(), FRotator::ZeroRotator);
 			}
-			gameMode->OnFired(GetOwner(), ActorInLOS, Rounds[RoundCounter]);
+			RoundsIndex++;
+			gameMode->OnFired(GetOwner(), ActorInLOS, Rounds[RoundsIndex - 1]);
 		}
 		else
 		{
@@ -115,7 +133,6 @@ void AVRInteractableActor_Pistol::RackPistol()
 	if (!bRacked) {
 		bCanFire = true;
 		bRacked = true;
-		RoundCounter++;
 
 		if (ensure(RackingSound))
 		{
@@ -124,9 +141,9 @@ void AVRInteractableActor_Pistol::RackPistol()
 	}
 }
 
-bool AVRInteractableActor_Pistol::IsRoundsEmpty() const
+bool AVRInteractableActor_Pistol::CanFire() const
 {
-	return RoundCounter >= Rounds.Num();
+	return RoundsIndex < Rounds.Num();
 }
 
 void AVRInteractableActor_Pistol::Reload()
@@ -162,19 +179,29 @@ void AVRInteractableActor_Pistol::Reload()
 	Rounds.Reset();
 	Rounds.SetNum(totalRounds);
 	int Counter = 0;
-	do
+	if (CVarOnlyBlanks.GetValueOnGameThread()) 
 	{
-		int RandVal = FMath::RandRange(0, Rounds.Num() - 1);
-		if (Rounds[RandVal] != true)
+		for (int i = 0; i < Rounds.Num(); i++) 
 		{
-			Rounds[RandVal] = true;
-			Counter++;
+			Rounds[i] = false;
 		}
-	} while (Counter != LiveRounds);
+	}
+	else 
+	{
+		do
+		{
+			int RandVal = FMath::RandRange(0, Rounds.Num() - 1);
+			if (Rounds[RandVal] != true)
+			{
+				Rounds[RandVal] = true;
+				Counter++;
+			}
+		} while (Counter != LiveRounds);
+	}
 
 	gameMode->bulletCount = totalRounds;
 	bCanFire = true;
-	RoundCounter = 0;
+	RoundsIndex = 0;
 }
 
 bool AVRInteractableActor_Pistol::IsActive() const

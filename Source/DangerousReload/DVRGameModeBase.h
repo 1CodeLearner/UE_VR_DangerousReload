@@ -74,6 +74,11 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "My Settings")
 	TArray<TSubclassOf<AVRInteractableActor>> ItemClasses;
 
+	UFUNCTION()
+	void SwitchTurns();
+	UFUNCTION()
+	void RestartMatch();
+
 	UPROPERTY()
 	TObjectPtr<AVRGameStateBase> VRGameState;
 

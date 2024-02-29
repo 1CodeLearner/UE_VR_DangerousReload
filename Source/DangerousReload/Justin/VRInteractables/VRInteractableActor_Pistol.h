@@ -28,7 +28,7 @@ public:
 	virtual void OnInteract(AActor* InstigatorA) override;
 
 	void RackPistol();
-	bool IsRoundsEmpty() const;
+	bool CanFire() const;
 	void Reload();
 
 protected:
@@ -59,7 +59,7 @@ private:
 
 	int LiveRounds;
 	TArray<bool> Rounds;
-	int RoundCounter; 
+	int RoundsIndex;
 
 	FTimerHandle RespawnHandle;
 	UFUNCTION()
