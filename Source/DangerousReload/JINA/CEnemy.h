@@ -49,6 +49,9 @@ public:
 	class AVRInteractableActor* currentObject;
 	class ACharacter* player;
 	FVector faceLocation;
+	bool bIsShot = false;
+	FTimerHandle timerHandle;
+	bool bTimerRun = false;
 
 	UPROPERTY(VisibleAnywhere, Category = "MySettings")
 	class UVRHealthComponent* HealthComp;

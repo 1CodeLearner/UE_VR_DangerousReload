@@ -109,14 +109,18 @@ void ACEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	//dead
+	if (HealthComp->GetMaxHealth() <= 0) return;
+
 	// face return
-	if (meshComp->GetRelativeLocation() != faceLocation) {
+	if (meshComp->GetRelativeLocation().X < faceLocation.X) {
+		UE_LOG(LogTemp, Warning, TEXT("Return To Face"));
 		meshComp->SetRelativeLocation(meshComp->GetRelativeLocation() + FVector(1, 0, 0));
 		return;
 	}
 
 	// Enemy turn
-	if (!gameMode->isPlayerTurn) {
+	if (gameMode->isPlayerTurn == false) {
 		if (life < 4)
 		{
 			// use life item during life == 4 or all life item
@@ -125,7 +129,22 @@ void ACEnemy::Tick(float DeltaTime)
 		if (succeedPercent >= 70)
 		{
 			// shoot to me
-			Shoot(this);
+			if (bIsShot == true) {
+				if (bTimerRun == false) {
+					bTimerRun = true;
+					GetWorld()->GetTimerManager().SetTimer(timerHandle, FTimerDelegate::CreateLambda([&]()
+						{
+							bIsShot = false;
+							bTimerRun = false;
+						}), 5.0f, false);
+				}
+				else return;
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Shot to me"));
+				Shoot(this);
+			}
 		}
 		else
 		{
@@ -148,13 +167,29 @@ void ACEnemy::Tick(float DeltaTime)
 			// else
 
 			Shoot(player);
-
-			// gameMode->isPlayerTurn = true
+			if (bIsShot == true) {
+				gameMode->isPlayerTurn = true;
+			}
 		}
 	}
 	// player turn
 	else if (gameMode->isPlayerTurn)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("PlayerTurn"));
+		//gun release
+		TArray<AActor*> isChild;
+		if (rightComp->GetChildComponent(0))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("I Have Gun"));
+			rightComp->SetWorldLocation(rightComp->GetComponentLocation() + (player->GetActorLocation() + FVector::ForwardVector * 100 - rightComp->GetComponentLocation()).GetSafeNormal());
+			if (FVector::Distance(player->GetActorLocation(), rightComp->GetComponentLocation()) < 200)
+			{
+				gun->OnRelease(this);
+				rightComp->SetRelativeLocation(FVector(70, 20, -10));
+				rightComp->SetRelativeRotation(FRotator(0, -90, 0));
+			}
+			return;
+		}
 		// if succeed
 		if (HealthComp->GetMaxHealth() != life) {
 			life = HealthComp->GetMaxHealth();
@@ -235,7 +270,7 @@ void ACEnemy::Shoot(ACharacter* target)
 	{
 		MoveToGun();
 	}
-	else {
+	else if(bIsShot == false){
 		ReturnToBody(target);
 	}
 }
@@ -245,7 +280,13 @@ void ACEnemy::ShotGun(ACharacter* target)
 	rightComp->SetRelativeRotation(FRotator(target->GetActorRotation().Pitch, target->GetActorRotation().Yaw * -1, target->GetActorRotation().Roll));
 	gun->SetActorRelativeRotation(rightComp->GetComponentRotation());
 	 /*gun->shoot*/
+	gun->ActorInLOS = target;
+	if (gun->bCanFire == false)
+	{
+		gun->RackPistol();
+	}
 	gun->OnInteract(target);
+	bIsShot = true;	
 }
 
 void ACEnemy::OnHealthChanged(bool bDamaged, int HealthRemaining)
@@ -253,7 +294,7 @@ void ACEnemy::OnHealthChanged(bool bDamaged, int HealthRemaining)
 	//health 가 변경될때 실행
 	UE_LOG(LogTemp, Warning, TEXT("%s: Health Changed"), *GetNameSafe(this));
 	if (bDamaged) {
-		meshComp->SetRelativeLocation(FVector(-70, 0, 0));
+		meshComp->SetRelativeLocation(meshComp->GetRelativeLocation() - FVector(500, 0, 0));
 		gameMode->isPlayerTurn = false;
 		currBulletCount -= 1;
 		if (HealthComp->IsDead())
@@ -266,6 +307,7 @@ void ACEnemy::OnHealthChanged(bool bDamaged, int HealthRemaining)
 void ACEnemy::OnDead()
 {
 	UE_LOG(LogTemp, Warning, TEXT("%s: IS DEAD!"), *GetNameSafe(this));
+	meshComp->SetRelativeLocation(FVector(-70, 0, 0));
 	rightComp->SetRelativeLocation(FVector(-70, 0, 0));
 	leftComp->SetRelativeLocation(FVector(-70, 0, 0));
 }
