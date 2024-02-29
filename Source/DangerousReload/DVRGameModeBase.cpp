@@ -122,27 +122,31 @@ void ADVRGameModeBase::OnFired(AActor* ActorInstigator, AActor* ActorAimed, bool
 			{
 				HealthComp->OnDead.Broadcast();
 			}
-			else {
+			else 
+			{
 				HealthComp->OnHealthChanged.Broadcast(true, HealthComp->GetMaxHealth());
+
+				ACharacter* CharacterHit = Cast<ACharacter>(ActorAimed);
+				if (CharacterHit)
+				{
+					ChangeLifeLightColor(CharacterHit, FLinearColor(0, 0, 0, 0));
+				}
+
+				if (ensure(Pistol) && !Pistol->IsRoundsEmpty()) 
+				{
+					//Switch Turns regardless who was shot
+					if (ActorInstigator == Player)
+					{
+						VRGameState->SetCurrentTurn(Enemy);
+					}
+					else
+					{
+						VRGameState->SetCurrentTurn(Player);
+					}
+					VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_SwitchTurn);
+				}
 			}
 		}
-
-		ACharacter* CharacterHit = Cast<ACharacter>(ActorAimed);
-		if (CharacterHit)
-		{
-			ChangeLifeLightColor(CharacterHit, FLinearColor(0, 0, 0, 0));
-		}
-
-		//Switch Turns regardless who was shot
-		if (ActorInstigator == Player)
-		{
-			VRGameState->SetCurrentTurn(Enemy);
-		}
-		else
-		{
-			VRGameState->SetCurrentTurn(Player);
-		}
-		VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_SwitchTurn);
 	}
 	else
 	{

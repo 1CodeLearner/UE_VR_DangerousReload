@@ -16,6 +16,7 @@
 #include "DangerousReload/DVRGameModeBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "VRInteractables/VRInteractableActor_Pistol.h"
+#include <../../../../../../../Source/Runtime/Engine/Classes/Kismet/GameplayStatics.h>
 
 // Sets default values
 AVRCharacter::AVRCharacter()
@@ -203,6 +204,12 @@ void AVRCharacter::OnDead()
 		PC->PlayerCameraManager->StartCameraFade(0, 1, .01f, FColor::Black, false, true);
 		FTimerHandle Handle;
 		GetWorld()->GetTimerManager().SetTimer(Handle, this, &AVRCharacter::GameOver, 2.f, false);
+		auto GameState = Cast<AVRGameStateBase>(UGameplayStatics::GetGameState(GetWorld()));
+		if (GameState) 
+		{
+			GameState->ChangeMatchStateTo(EMatchState::EMATCH_Stop);
+
+		}
 	}
 }
 

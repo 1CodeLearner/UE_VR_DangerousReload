@@ -8,7 +8,7 @@
 #include "../../DVRgameModeBase.h"
 #include "../BFL_Logging.h"
 
-//static TAutoConsoleVariable<bool> CVarMaxLiveRounds(TEXT("jk.MaxLiveRounds"), false, TEXT("Set all rounds to live rounds")
+static TAutoConsoleVariable<int> CVarMaxLiveRounds(TEXT("jk.ChangeRounds"), 8, TEXT("Adjust number of rounds in chamber"));
 
 AVRInteractableActor_Pistol::AVRInteractableActor_Pistol()
 {
@@ -131,7 +131,8 @@ bool AVRInteractableActor_Pistol::IsRoundsEmpty() const
 
 void AVRInteractableActor_Pistol::Reload()
 {
-	int32 totalRounds = FMath::RandRange(2, 8);
+	int MaxNum = CVarMaxLiveRounds.GetValueOnGameThread();
+	int32 totalRounds = FMath::RandRange(2, MaxNum);
 	int32 liveRounds = totalRounds / 2;
 
 	int32 operations = FMath::RandRange(0, 2);

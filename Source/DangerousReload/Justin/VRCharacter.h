@@ -107,7 +107,6 @@ private:
 	bool bIsGripping;
 	UPROPERTY()
 	AActor* RInteractingActor;
-	void CheckGrabObject();
 
 	UPROPERTY()
 	TObjectPtr<APlayerController> PC;
