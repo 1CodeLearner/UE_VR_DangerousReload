@@ -6,6 +6,7 @@
 #include "Components/BoxComponent.h"
 #include "../../JINA/CEnemy.h"
 #include "../../DVRGameModeBase.h"
+#include "../../VRGameStateBase.h"
 
 static TAutoConsoleVariable<bool> CVarTestPhysics(TEXT("jk.TogglePhysics"), true, TEXT("Toggle Test Physics for Interactable objects"), ECVF_Cheat);
 
@@ -66,13 +67,13 @@ void AVRInteractableActor::OnPickup(AActor* InstigatorA)
 	//bIsPhysicsEnabled = CVarTestPhysics.GetValueOnGameThread();
 	GrabbableBoxComponent->SetSimulatePhysics(bIsPhysicsEnabled);
 
-	auto VRCharacter = Cast<AVRCharacter>(InstigatorA);
+	AVRCharacter* VRCharacter = Cast<AVRCharacter>(InstigatorA);
 	if (VRCharacter != nullptr)
 	{
 		AttachToComponent(VRCharacter->RHandSKMComp, FAttachmentTransformRules::KeepWorldTransform);
 	}
 	else {
-		auto Enemy = Cast<ACEnemy>(InstigatorA);
+		ACEnemy* Enemy = Cast<ACEnemy>(InstigatorA);
 		if (Enemy != nullptr)
 		{
 			AttachToComponent(Enemy->rightComp, FAttachmentTransformRules::KeepWorldTransform);
@@ -80,10 +81,24 @@ void AVRInteractableActor::OnPickup(AActor* InstigatorA)
 	}
 
 	SetOwner(InstigatorA);
+
+
+	//if (ParentActor == nullptr)
+	//{
+	//	ParentActor = InstigatorA;
+	//	//UE_LOG(LogTemp, Warning, TEXT("Instigator: %s"), *ParentActor->GetActorNameOrLabel());
+
+	//	/*FVector vec = ParentActor->GetActorLocation();
+	//	SetActorLocation(vec);
+	//	UE_LOG(LogTemp, Warning, TEXT("%.2f, %.2f, %.2f"), vec.X, vec.Y, vec.Z);*/
+	//	if (ACEnemy* enemy = Cast<ACEnemy>(InstigatorA))
+	//	{
+	//		GrabbableBoxComponent->SetSimulatePhysics(false);
+	//		AttachToComponent(enemy->rightComp, FAttachmentTransformRules::KeepWorldTransform);
+	//	}
+	//	
+	//}
 }
-
-
-
 
 void AVRInteractableActor::OnRelease(AActor* InstigatorA)
 {

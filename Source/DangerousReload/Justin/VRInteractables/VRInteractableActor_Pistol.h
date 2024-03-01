@@ -10,7 +10,7 @@
  *
  */
 
- DECLARE_DELEGATE(FWeaponDroppedDelegate);
+DECLARE_DELEGATE(FWeaponDroppedDelegate);
 
 UCLASS()
 class DANGEROUSRELOAD_API AVRInteractableActor_Pistol : public AVRInteractableActor
@@ -27,9 +27,16 @@ public:
 	virtual void OnRelease(AActor* InstigatorA) override;
 	virtual void OnInteract(AActor* InstigatorA) override;
 
+	bool IsRacked() const;
 	void RackPistol();
 	bool CanFire() const;
 	void Reload();
+
+	void SetActorInLOS(AActor* OtherActor);
+
+	float GetLiveRounds() const;
+	float GetTotalRounds() const;
+	float GetRemainingRounds() const;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Pistol")
@@ -44,7 +51,7 @@ protected:
 
 private:
 	bool IsActive() const;
-	//Changed by game & match states
+	//Changed by match states (in AVRGameStateBase)
 	bool bIsActive;
 	//Changed by handling the weapon
 	bool bCanFire;

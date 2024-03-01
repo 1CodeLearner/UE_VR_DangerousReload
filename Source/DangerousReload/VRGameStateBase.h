@@ -6,6 +6,9 @@
 #include "GameFramework/GameStateBase.h"
 #include "VRGameStateBase.generated.h"
 
+
+class DVRGameModeBase;
+
 /**
  *
  */
@@ -23,7 +26,7 @@ enum class EMatchState : uint8
 	EMATCH_Stop UMETA(DisplayName = "Stop"),
 };
 
-UENUM()
+/*UENUM()
 enum class EGameState : uint8
 {
 	EGAME_Default UMETA(DisplayName = "Default"),
@@ -32,7 +35,7 @@ enum class EGameState : uint8
 	EGAME_OnGoing UMETA(DisplayName = "GameOnGoing"),
 	EGAME_Reset UMETA(DisplayName = "GameReset"),
 	EGAME_Stop UMETA(DisplayName = "GameStop")
-};
+};*/
 
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FMatchStateChangedDelegate, EMatchState CurrentMatchstate);
@@ -47,19 +50,25 @@ public:
 	virtual void Tick( float DeltaSeconds ) override;
 
 	FMatchStateChangedDelegate OnMatchStateChanged;
-	void ChangeMatchStateTo(EMatchState MatchState);
-	bool IsMatchState(EMatchState CheckMatchState);
+	bool IsMatchState(EMatchState CheckMatchState) const;
 	AActor* GetCurrentTurn() const;
-	void SetCurrentTurn(AActor* ActorTurn);
 
 	bool IsPlaying() const;
 	int GetMatchCount() const;
 
 
 private:
+	
+	/*Only these classes can change the state of the game:*/
+	friend class ADVRGameModeBase;
+	friend class AVRButtonActor;
+
+	void ChangeMatchStateTo(EMatchState MatchState);
+	void SetCurrentTurn(AActor* ActorTurn);
 	bool bIsFirstTimePlaying;
 	bool bIsPlaying;
 
+	UPROPERTY()
 	AActor* CurrentTurn;
 
 	int MatchCount;

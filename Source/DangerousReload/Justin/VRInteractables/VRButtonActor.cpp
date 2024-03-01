@@ -2,7 +2,9 @@
 
 
 #include "VRButtonActor.h"
+#include "../../VRGameStateBase.h"
 #include "Components/SkeletalMeshComponent.h"
+
 
 AVRButtonActor::AVRButtonActor()
 {

@@ -5,9 +5,10 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "../../VRInteractInterface.h"
-#include "../../VRGameStateBase.h"
 #include "VRInteractableActor.generated.h"
 
+enum class EMatchState : uint8;
+class AVRGameStateBase;
 class UBoxComponent;
 class UStaticMeshComponent;
 
@@ -40,7 +41,7 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<AVRGameStateBase> VRGameState;
-	
+
 	UPROPERTY()
 	class ADVRGameModeBase* gameMode;
 

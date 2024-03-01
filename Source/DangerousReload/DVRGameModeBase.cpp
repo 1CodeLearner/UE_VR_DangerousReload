@@ -4,19 +4,14 @@
 #include "DVRGameModeBase.h"
 #include "Justin/VRCharacter.h"
 #include "Justin/VRHealthComponent.h"
-#include "Justin/VRCharacter.h"
 #include "JINA/CEnemy.h"
 #include "EngineUtils.h"
 #include "JINA/CSpotLightActor.h"
-#include "Kismet/GameplayStatics.h"
-#include "Components/SpotLightComponent.h"
 #include "Justin/VRInteractables/VRInteractableActor_Pistol.h"
 #include "VRGameStateBase.h"
-#include "Justin/BFL_Logging.h"
 
 ADVRGameModeBase::ADVRGameModeBase()
 {
-	isPlayerTurn = true;
 }
 void ADVRGameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
@@ -51,8 +46,6 @@ void ADVRGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	FTimerHandle Handle;
-
 	auto Temp = GetGameState<AVRGameStateBase>();
 	if (ensure(Temp))
 	{
@@ -65,6 +58,23 @@ void ADVRGameModeBase::BeginPlay()
 	{
 		Pistol->OnWeaponDropped.BindUObject(this, &ADVRGameModeBase::RespawnPistol);
 		PistolRespawnTransform = Pistol->GetActorTransform();
+	}
+
+	TArray<ACSpotLightActor*> lifeLight;
+	for (TActorIterator<ACSpotLightActor> it(GetWorld()); it; ++it) {
+		lifeLight.Add(*it);
+	}
+	if (!lifeLight.IsEmpty())
+	{
+		for (int32 i = 0; i < 4; ++i)
+		{
+			playerLifeSpotlight.Add(Cast<ACSpotLightActor>(lifeLight[i]));
+		}
+		for (int32 i = 0; i < 4; ++i)
+		{
+
+			enemyLifeSpotlight.Add(Cast<ACSpotLightActor>(lifeLight[i + 4]));
+		}
 	}
 }
 
@@ -103,8 +113,6 @@ void ADVRGameModeBase::StartMatch()
 				EnemyHealth->SetMaxHealth(Match->Health);
 			}
 		}
-
-		isPlayerTurn = true;
 		VRGameState->SetCurrentTurn(Player);
 	}
 }
@@ -128,15 +136,21 @@ void ADVRGameModeBase::OnFired(AActor* ActorInstigator, AActor* ActorAimed, bool
 				HealthComp->OnHealthChanged.Broadcast(true, HealthComp->GetMaxHealth());
 
 				ACharacter* CharacterHit = Cast<ACharacter>(ActorAimed);
+				ACharacter* EnemyHit = Cast<ACEnemy>(ActorAimed);
 				if (CharacterHit)
 				{
-					ChangeLifeLightColor(CharacterHit, FLinearColor(0, 0, 0, 0));
+					ChangeLifeLightColor(CharacterHit, FLinearColor::Red);
+				}
+				else if (EnemyHit)
+				{
+					ChangeLifeLightColor(EnemyHit, FLinearColor::Red);
 				}
 			}
 		}
 	}
 
-	if (HealthComp->IsDead()) 
+
+	if (HealthComp->IsDead())
 	{
 		VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_Stop);
 	}
@@ -144,7 +158,7 @@ void ADVRGameModeBase::OnFired(AActor* ActorInstigator, AActor* ActorAimed, bool
 	{
 		VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_RoundReset);
 	}
-	else 
+	else
 	{
 		//Handle turns
 		if (bIsLiveRound)
@@ -159,6 +173,7 @@ void ADVRGameModeBase::OnFired(AActor* ActorInstigator, AActor* ActorAimed, bool
 				VRGameState->SetCurrentTurn(Player);
 			}
 			VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_SwitchTurn);
+
 		}
 		else
 		{
@@ -171,6 +186,7 @@ void ADVRGameModeBase::OnFired(AActor* ActorInstigator, AActor* ActorAimed, bool
 		}
 	}
 }
+
 
 void ADVRGameModeBase::ChangeLifeLightColor(ACharacter* target, FLinearColor color)
 {
@@ -207,7 +223,7 @@ void ADVRGameModeBase::RespawnPistol()
 		FTimerHandle Handle;
 		GetWorld()->GetTimerManager().SetTimer(Handle, this, &ADVRGameModeBase::SwitchTurns, 2.f, false);
 	}
-	else if (VRGameState->IsMatchState(EMatchState::EMATCH_RoundReset)) 
+	else if (VRGameState->IsMatchState(EMatchState::EMATCH_RoundReset))
 	{
 		FTimerHandle Handle;
 		GetWorld()->GetTimerManager().SetTimer(Handle, this, &ADVRGameModeBase::RestartMatch, 2.f, false);

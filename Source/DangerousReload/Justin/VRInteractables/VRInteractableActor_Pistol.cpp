@@ -5,10 +5,11 @@
 
 #include "DangerousReload/DVRgameModeBase.h"
 #include "Kismet/GameplayStatics.h"
-#include "../../DVRgameModeBase.h"
 #include "../BFL_Logging.h"
+#include "../VRCharacter.h"
+#include "../../VRGameStateBase.h"
 
-static TAutoConsoleVariable<int> CVarMaxLiveRounds(TEXT("jk.ChangeRounds"), 8, TEXT("Adjust number of rounds in chamber"));
+static TAutoConsoleVariable<int> CVarMaxLiveRounds(TEXT("jk.ChangeRounds"), 4, TEXT("Adjust number of rounds in chamber"));
 static TAutoConsoleVariable<int> CVarOnlyBlanks(TEXT("jk.OnlyBlanks"), false, TEXT("All rounds are blanks"));
 
 AVRInteractableActor_Pistol::AVRInteractableActor_Pistol()
@@ -26,7 +27,11 @@ void AVRInteractableActor_Pistol::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	if (IsActive() && GetOwner())
 	{
-		FindActorInLOS();
+		auto Player = GetOwner<AVRCharacter>();
+		if (Player)
+		{
+			FindActorInLOS();
+		}
 	}
 	for (int i = 0; i < Rounds.Num(); ++i)
 	{
@@ -110,10 +115,12 @@ void AVRInteractableActor_Pistol::OnInteract(AActor* InstigatorA)
 		{
 			if (Rounds[RoundsIndex])
 			{
+				//Successfully fired
 				SKMComp->PlayAnimation(FireSequenceAnim, false);
 			}
 			else
 			{
+				//A blank was fired
 				UGameplayStatics::PlaySoundAtLocation(GetOwner(), EmptyGunSound, GetOwner()->GetActorLocation(), FRotator::ZeroRotator);
 			}
 			RoundsIndex++;
@@ -121,11 +128,17 @@ void AVRInteractableActor_Pistol::OnInteract(AActor* InstigatorA)
 		}
 		else
 		{
+			//Magazine is empty
 			UGameplayStatics::PlaySoundAtLocation(GetOwner(), EmptyGunSound, GetOwner()->GetActorLocation(), FRotator::ZeroRotator);
 		}
 		bCanFire = false;
 		bRacked = false;
 	}
+}
+
+bool AVRInteractableActor_Pistol::IsRacked() const
+{
+	return bRacked;
 }
 
 void AVRInteractableActor_Pistol::RackPistol()
@@ -179,14 +192,14 @@ void AVRInteractableActor_Pistol::Reload()
 	Rounds.Reset();
 	Rounds.SetNum(totalRounds);
 	int Counter = 0;
-	if (CVarOnlyBlanks.GetValueOnGameThread()) 
+	if (CVarOnlyBlanks.GetValueOnGameThread())
 	{
-		for (int i = 0; i < Rounds.Num(); i++) 
+		for (int i = 0; i < Rounds.Num(); i++)
 		{
 			Rounds[i] = false;
 		}
 	}
-	else 
+	else
 	{
 		do
 		{
@@ -248,6 +261,26 @@ void AVRInteractableActor_Pistol::FindActorInLOS()
 	ActorInLOS = nullptr;
 	DrawDebugLine(GetWorld(), Start, End, FColor::Blue, false, 2.f);
 
+}
+
+void AVRInteractableActor_Pistol::SetActorInLOS(AActor* OtherActor)
+{
+	ActorInLOS = OtherActor;
+}
+
+float AVRInteractableActor_Pistol::GetLiveRounds() const
+{
+	return (float)LiveRounds;
+}
+
+float AVRInteractableActor_Pistol::GetTotalRounds() const
+{
+	return (float)Rounds.Num();
+}
+
+float AVRInteractableActor_Pistol::GetRemainingRounds() const
+{
+	return (float)(Rounds.Num() - RoundsIndex);
 }
 
 void AVRInteractableActor_Pistol::RespawnWeapon()

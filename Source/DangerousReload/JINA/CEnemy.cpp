@@ -7,11 +7,13 @@
 #include <Kismet/GameplayStatics.h>
 #include "../Justin/VRInteractables/VRInteractableActor_Pistol.h"
 #include "../Justin/VRHealthComponent.h"
+#include "EngineUtils.h"
+#include "../VRGameStateBase.h"
 
 // Sets default values
 ACEnemy::ACEnemy()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	sphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Component"));
@@ -53,12 +55,25 @@ ACEnemy::ACEnemy()
 		leftComp->SetSkeletalMesh(tempLeftHandMesh.Object);
 	}
 
+	// background
+	backComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Back Ground"));
+	backComp->SetupAttachment(RootComponent);
+	backComp->SetRelativeLocation(FVector(-50, 0, 0));
+	backComp->SetWorldScale3D(FVector(0.1f, 5, 3));
+	backComp->SetStaticMesh(tempMesh.Object);
+
 	ConstructorHelpers::FObjectFinder<UMaterial> tempMat(TEXT("/Script/Engine.Material'/Engine/ArtTools/RenderToTexture/Materials/Debug/M_BaseColor_Constant.M_BaseColor_Constant'"));
 	if (tempMat.Succeeded())
 	{
 		meshComp->SetMaterial(0, tempMat.Object);
 		rightComp->SetMaterial(0, tempMat.Object);
 		leftComp->SetMaterial(0, tempMat.Object);
+	}
+
+	ConstructorHelpers::FObjectFinder<UMaterial> tempBlackMat(TEXT("/Script/Engine.Material'/Engine/EngineDebugMaterials/BlackUnlitMaterial.BlackUnlitMaterial'"));
+	if (tempBlackMat.Succeeded())
+	{
+		backComp->SetMaterial(0, tempBlackMat.Object);
 	}
 
 	HealthComp = CreateDefaultSubobject<UVRHealthComponent>("HealthComp");
@@ -69,13 +84,27 @@ void ACEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 	gameMode = GetWorld()->GetAuthGameMode<ADVRGameModeBase>();
-	currBulletCount = gameMode->bulletCount;
-	fakeBulletCount = currBulletCount / 2;
+	/*Bullet Count is kept tracked by AVRInteractableActor_Pistol (Line 62-64)*/
+	//currBulletCount = gameMode->bulletCount;
+	//fakeBulletCount = currBulletCount / 2;
+
 	player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-	gun = Cast<AVRInteractableActor_Pistol>(UGameplayStatics::GetActorOfClass(GetWorld(), AVRInteractableActor_Pistol::StaticClass()));
+
+	for (TActorIterator<AVRInteractableActor_Pistol> it(GetWorld()); it; ++it)
+	{
+		gun = *it;
+		if (gun != nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Gun: %s"), *gun->GetActorNameOrLabel());
+			break;
+		}
+	}
 
 	HealthComp->OnHealthChanged.AddUObject(this, &ACEnemy::OnHealthChanged);
 	HealthComp->OnDead.AddUObject(this, &ACEnemy::OnDead);
+
+	faceLocation = meshComp->GetRelativeLocation();
+	life = HealthComp->GetMaxHealth();
 }
 
 // Called every frame
@@ -83,16 +112,46 @@ void ACEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (!gameMode->isPlayerTurn) {
+	//dead
+	if (HealthComp->GetMaxHealth() <= 0) return;
+
+	// face return
+	if (meshComp->GetRelativeLocation().X < faceLocation.X) {
+		UE_LOG(LogTemp, Warning, TEXT("Return To Face"));
+		meshComp->SetRelativeLocation(meshComp->GetRelativeLocation() + FVector(1, 0, 0));
+		return;
+	}
+
+	// Enemy turn
+	/*if (gameMode->isPlayerTurn == false) {*/
+	if (VRGameState->GetCurrentTurn() == this) {
 		if (life < 4)
 		{
 			// use life item during life == 4 or all life item
 		}
-		float succeedPercent = fakeBulletCount / currBulletCount * 100;
+
+		/*float succeedPercent = fakeBulletCount / currBulletCount * 100;*/
+		float fakeBulletCount = gun->GetTotalRounds() - gun->GetLiveRounds();
+		float succeedPercent = fakeBulletCount / gun->GetRemainingRounds() * 100.f;
 		if (succeedPercent >= 70)
 		{
 			// shoot to me
-			Shoot(this);
+			if (bIsShot == true) {
+				if (bTimerRun == false) {
+					bTimerRun = true;
+					GetWorld()->GetTimerManager().SetTimer(timerHandle, FTimerDelegate::CreateLambda([&]()
+						{
+							bIsShot = false;
+							bTimerRun = false;
+						}), 5.0f, false);
+				}
+				else return;
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Shot to me"));
+				Shoot(this);
+			}
 		}
 		else
 		{
@@ -113,18 +172,48 @@ void ACEnemy::Tick(float DeltaTime)
 			//		else
 			//			currBullet - 1
 			// else
-			Shoot(player);
 
-			// gameMode->isPlayerTurn = true
+			Shoot(player);
+			/*if (bIsShot == true) {
+				gameMode->isPlayerTurn = true;
+			}*/
 		}
 	}
-	else if (gameMode->isPlayerTurn)
+	// player turn
+	/*else if (gameMode->isPlayerTurn)*/
+	else if (VRGameState->GetCurrentTurn() == player)
 	{
-		// if fail
-		// fakeBulletCount - 1 and currBullet - 1
+		UE_LOG(LogTemp, Warning, TEXT("PlayerTurn"));
+		//gun release
+		TArray<AActor*> isChild;
+		if (rightComp->GetChildComponent(0))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("I Have Gun"));
+			rightComp->SetWorldLocation(rightComp->GetComponentLocation() + (player->GetActorLocation() + FVector::ForwardVector * 100 - rightComp->GetComponentLocation()).GetSafeNormal());
+			if (FVector::Distance(player->GetActorLocation(), rightComp->GetComponentLocation()) < 200)
+			{
+				gun->OnRelease(this);
+				rightComp->SetRelativeLocation(FVector(70, 20, -10));
+				rightComp->SetRelativeRotation(FRotator(0, -90, 0));
+			}
+			return;
+		}
 		// if succeed
-		// currBullet - 1
+		if (HealthComp->GetMaxHealth() != life) {
+			life = HealthComp->GetMaxHealth();
+			OnHealthChanged(true, HealthComp->GetMaxHealth());
+		}
+		// if fail
+		//
 
+		/*BulletCount is tracked by AVRInteractableActor_Pistol*/
+		/*Switching Turns is done by DVRGameModeBase*/
+		//else if (gameMode->CurrentTurn = Cast<AActor>(this))
+		//{
+		//	currBulletCount -= 1;
+		//	fakeBulletCount -= 1;
+		//	gameMode->isPlayerTurn = false;
+		//}
 	}
 }
 
@@ -135,39 +224,70 @@ void ACEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
+void ACEnemy::OnMatchStateChanged(EMatchState MatchState)
+{
+	//Game flow logic for Enemy here
+	switch (MatchState)
+	{
+	case EMatchState::EMATCH_Start:
+	{
+		break;
+	}
+		//etc.
+	}
+}
+
 void ACEnemy::MoveToGun()
 {
-	rightComp->SetWorldLocation(gun->GetActorLocation().GetSafeNormal());
-	FHitResult hitInfo;
-	FVector pos = rightComp->GetComponentLocation();
-	FCollisionObjectQueryParams objectParams;
-	//objectParams.AddObjectTypesToQuery(ECollisionChannel::ECC_GameTraceChannel1);
-	FCollisionQueryParams params;
-	params.AddIgnoredActor(this);
-	//params.AddIgnoredActor(table);
+	if (gun != nullptr) rightComp->SetWorldLocation(rightComp->GetComponentLocation() + (gun->GetActorLocation() - rightComp->GetComponentLocation()).GetSafeNormal());
+	if (gun != nullptr) {
+		//FHitResult hitInfo;
+		//FVector pos = rightComp->GetComponentLocation();
+		//FCollisionObjectQueryParams objectParams;
+		//objectParams.AddObjectTypesToQuery(ECollisionChannel::ECC_GameTraceChannel1);
+		//FCollisionQueryParams params;
+		//params.AddIgnoredActor(this);
+		////params.AddIgnoredActor(table);
 
-	bool bChecked = GetWorld()->SweepSingleByObjectType(hitInfo, pos, pos, FQuat::Identity, objectParams, FCollisionShape::MakeSphere(20), params);
+		//bool bChecked = GetWorld()->SweepSingleByObjectType(hitInfo, pos, pos, FQuat::Identity, objectParams, FCollisionShape::MakeSphere(20), params);
+		//DrawDebugSphere(GetWorld(), pos, 20, 10, FColor::Red);
+		//GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, FString::Printf(TEXT("bcheck: %d"), bChecked));
+		//if (bChecked) {
+		//	UE_LOG(LogTemp, Warning, TEXT("33333333333333333333333"));
 
-	if (bChecked) {
-		currentObject = Cast<AVRInteractableActor_Pistol>(hitInfo.GetActor());
-		if (currentObject != nullptr)
+		//	currentObject = Cast<AVRInteractableActor_Pistol>(hitInfo.GetActor());
+		//	if (currentObject != nullptr)
+		//	{
+		//		//FAttachmentTransformRules attachRules = FAttachmentTransformRules::SnapToTargetNotIncludingScale;
+
+		//		//AttachToComponent(rightComp, attachRules, FName("Gun"));
+		//		currentObject->OnPickup(this);
+		//	}
+		FVector gunPos = gun->GetActorLocation();
+		FVector handPos = rightComp->GetComponentLocation();
+
+		if (FVector::Distance(gunPos, handPos) < 20)
 		{
-			//FAttachmentTransformRules attachRules = FAttachmentTransformRules::SnapToTargetNotIncludingScale;
-
-			//AttachToComponent(rightComp, attachRules, FName("Gun"));
-			currentObject->OnPickup(this);
+			if (currentObject == nullptr)
+			{
+				currentObject = gun;
+				currentObject->OnPickup(this);
+			}
 		}
 	}
 }
 
 void ACEnemy::ReturnToBody(ACharacter* target)
 {
-	rightComp->SetRelativeLocation(FVector(0, 20, 0).GetSafeNormal());
-	if (rightComp->GetRelativeLocation() == FVector(0, 20, 0))
+	if (FVector::Distance(this->GetActorLocation(), rightComp->GetComponentLocation()) < 100)
 	{
 		ShotGun(target);
 	}
+	else {
+		rightComp->SetWorldLocation(rightComp->GetComponentLocation() + (this->GetActorLocation() + FVector(70, 20, -10) - rightComp->GetComponentLocation()).GetSafeNormal());
+	}
 }
+
 
 void ACEnemy::Shoot(ACharacter* target)
 {
@@ -175,25 +295,52 @@ void ACEnemy::Shoot(ACharacter* target)
 	{
 		MoveToGun();
 	}
-	else {
+	else if (bIsShot == false) {
 		ReturnToBody(target);
 	}
 }
 
 void ACEnemy::ShotGun(ACharacter* target)
 {
-	rightComp->SetRelativeRotation(FRotator(target->GetActorRotation().Yaw, target->GetActorRotation().Roll * -1, target->GetActorRotation().Pitch));
-	// gun->shoot
+	rightComp->SetRelativeRotation(FRotator(target->GetActorRotation().Pitch, target->GetActorRotation().Yaw * -1, target->GetActorRotation().Roll));
+	gun->SetActorRelativeRotation(rightComp->GetComponentRotation());
+	/*gun->shoot*/
+
+	/*gun->ActorInLOS = target;*/
+	gun->SetActorInLOS(target);
+
+	/*if (gun->bCanFire == false)*/
+	/*if(gun->CanFire())*/
+
+	if (!gun->IsRacked())
+	{
+		gun->RackPistol();
+	}
+
+	gun->OnInteract(target);
+	bIsShot = true;
 }
 
 void ACEnemy::OnHealthChanged(bool bDamaged, int HealthRemaining)
 {
 	//health 가 변경될때 실행
 	UE_LOG(LogTemp, Warning, TEXT("%s: Health Changed"), *GetNameSafe(this));
+	if (bDamaged) {
+		meshComp->SetRelativeLocation(meshComp->GetRelativeLocation() - FVector(500, 0, 0));
+		/*gameMode->isPlayerTurn = false;*/
+		//currBulletCount -= 1;
+		if (HealthComp->IsDead())
+		{
+			OnDead();
+		}
+	}
 }
 
 void ACEnemy::OnDead()
 {
 	UE_LOG(LogTemp, Warning, TEXT("%s: IS DEAD!"), *GetNameSafe(this));
+	meshComp->SetRelativeLocation(FVector(-70, 0, 0));
+	rightComp->SetRelativeLocation(FVector(-70, 0, 0));
+	leftComp->SetRelativeLocation(FVector(-70, 0, 0));
 }
 

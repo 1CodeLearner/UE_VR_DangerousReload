@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "VRGameStateBase.h"
 #include "DVRGameModeBase.generated.h"
 
 /**
@@ -12,6 +12,8 @@
  */
 
 
+enum class EMatchState : uint8;
+class AVRGameStateBase;
 class AVRCharacter;
 class ACEnemy;
 class AVRInteractableActor;
@@ -34,21 +36,22 @@ class DANGEROUSRELOAD_API ADVRGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 
-
 public:
 	ADVRGameModeBase();
+
+protected:
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 	virtual void BeginPlay() override;
 
+protected:
 	void OnMatchStateChanged(EMatchState CurrentMatchState);
-
-public:
-	bool isPlayerTurn = false;
-	int bulletCount;
 
 	void StartMatch();
 
+public:
 	void OnFired(AActor* ActorInstigator, AActor* ActorHit, bool bIsLiveRound);
+
+	int bulletCount;
 
 	UPROPERTY(EditAnywhere, Category = "My Settings")
 	TArray<class ACSpotLightActor*> playerLifeSpotlight;

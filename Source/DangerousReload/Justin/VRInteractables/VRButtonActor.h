@@ -4,9 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "../../VRGameStateBase.h"
 #include "VRButtonActor.generated.h"
 
+enum class EMatchState : uint8;
 class USkeletalMeshComponent; 
 
 UCLASS()

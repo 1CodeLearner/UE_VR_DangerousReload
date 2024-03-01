@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "CEnemy.generated.h"
 
+enum class EMatchState : uint8;
+
 UCLASS()
 class DANGEROUSRELOAD_API ACEnemy : public ACharacter
 {
@@ -26,25 +28,37 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UPROPERTY(VisibleAnywhere, Category="MySettings")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="MySettings")
 	class USphereComponent* sphereComp;
 
-	UPROPERTY(VisibleAnywhere, Category = "MySettings")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MySettings")
 	class UStaticMeshComponent* meshComp;
 
-	UPROPERTY(VisibleAnywhere, Category = "MySettings")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MySettings")
 	class USkeletalMeshComponent* rightComp;
 
-	UPROPERTY(VisibleAnywhere, Category = "MySettings")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MySettings")
 	class USkeletalMeshComponent* leftComp;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "MySettings")
+	class UStaticMeshComponent* backComp;
+
 	class ADVRGameModeBase* gameMode;
+	//Adding Game State here
+	class AVRGameStateBase* VRGameState;
+	void OnMatchStateChanged(EMatchState MatchState);
+	//
 	class AVRInteractableActor_Pistol* gun;
-	float currBulletCount;
-	float fakeBulletCount;
+	/*Bullet Count is kept tracked by AVRInteractableActor_Pistol (Line 62-64)*/
+	//float currBulletCount;
+	//float fakeBulletCount;
 	float life = 4;
 	class AVRInteractableActor* currentObject;
 	class ACharacter* player;
+	FVector faceLocation;
+	bool bIsShot = false;
+	FTimerHandle timerHandle;
+	bool bTimerRun = false;
 
 	UPROPERTY(VisibleAnywhere, Category = "MySettings")
 	class UVRHealthComponent* HealthComp;

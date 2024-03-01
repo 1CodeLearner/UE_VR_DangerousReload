@@ -2,7 +2,6 @@
 
 
 #include "VRGameStateBase.h"
-#include "DVRGameModeBase.h"
 #include "Justin/BFL_Logging.h"
 
 AVRGameStateBase::AVRGameStateBase()
@@ -33,20 +32,22 @@ void AVRGameStateBase::Tick(float DeltaSeconds)
 	}
 }
 
-void AVRGameStateBase::ChangeMatchStateTo(EMatchState MatchState)
-{
-	MatchStateEnum = MatchState;
-	OnMatchStateChanged.Broadcast(MatchStateEnum);
-}
 
-bool AVRGameStateBase::IsMatchState(EMatchState CheckMatchState)
+bool AVRGameStateBase::IsMatchState(EMatchState CheckMatchState) const
 {
 	return MatchStateEnum == CheckMatchState;
 }
 
 AActor* AVRGameStateBase::GetCurrentTurn() const
 {
-	return CurrentTurn;
+	if (CurrentTurn) return CurrentTurn;
+	return nullptr;
+}
+
+void AVRGameStateBase::ChangeMatchStateTo(EMatchState MatchState)
+{
+	MatchStateEnum = MatchState;
+	OnMatchStateChanged.Broadcast(MatchStateEnum);
 }
 
 void AVRGameStateBase::SetCurrentTurn(AActor* ActorTurn)
