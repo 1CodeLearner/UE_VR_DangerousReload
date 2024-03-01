@@ -11,6 +11,7 @@
 
 static TAutoConsoleVariable<int> CVarMaxLiveRounds(TEXT("jk.ChangeRounds"), 4, TEXT("Adjust number of rounds in chamber"));
 static TAutoConsoleVariable<int> CVarOnlyBlanks(TEXT("jk.OnlyBlanks"), false, TEXT("All rounds are blanks"));
+static TAutoConsoleVariable<int> CVarIgnoreTurns(TEXT("jk.IgnoreTurns"), false, TEXT("Ignore turns and let all participants pickup weapon"));
 
 AVRInteractableActor_Pistol::AVRInteractableActor_Pistol()
 {
@@ -79,7 +80,7 @@ void AVRInteractableActor_Pistol::OnMatchChanged(EMatchState CurrentMatchState)
 void AVRInteractableActor_Pistol::OnPickup(AActor* InstigatorA)
 {
 	/*if (VRGameState->GetCurrentTurn() == InstigatorA)*/
-	if(VRGameState->IsCurrentTurn(InstigatorA))
+	if(CVarIgnoreTurns.GetValueOnGameThread() || VRGameState->IsCurrentTurn(InstigatorA))
 	{
 		Super::OnPickup(InstigatorA);
 		if (RespawnHandle.IsValid())

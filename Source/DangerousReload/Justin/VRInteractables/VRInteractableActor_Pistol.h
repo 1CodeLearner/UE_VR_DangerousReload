@@ -30,7 +30,6 @@ public:
 	bool IsRacked() const;
 	void RackPistol();
 	bool CanFire() const;
-	void Reload();
 
 	void SetActorInLOS(AActor* OtherActor);
 
@@ -67,6 +66,7 @@ private:
 	int LiveRounds;
 	TArray<bool> Rounds;
 	int RoundsIndex;
+	void Reload();
 
 	FTimerHandle RespawnHandle;
 	UFUNCTION()

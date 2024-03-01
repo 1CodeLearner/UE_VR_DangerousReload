@@ -39,6 +39,9 @@ class DANGEROUSRELOAD_API ADVRGameModeBase : public AGameModeBase
 public:
 	ADVRGameModeBase();
 
+	//***For enemy Testing only***
+	bool isPlayerTurn = false;
+
 protected:
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 	virtual void BeginPlay() override;

@@ -64,6 +64,7 @@ void AVRInteractableActor::OnPickup(AActor* InstigatorA)
 	UE_LOG(LogTemp, Warning, TEXT("OnPickup invoked"));
 
 	bool bIsPhysicsEnabled = false;
+	bool bSuccess = false;
 	//bIsPhysicsEnabled = CVarTestPhysics.GetValueOnGameThread();
 	GrabbableBoxComponent->SetSimulatePhysics(bIsPhysicsEnabled);
 
@@ -71,16 +72,21 @@ void AVRInteractableActor::OnPickup(AActor* InstigatorA)
 	if (VRCharacter != nullptr)
 	{
 		AttachToComponent(VRCharacter->RHandSKMComp, FAttachmentTransformRules::KeepWorldTransform);
+		bSuccess = true;
 	}
 	else {
 		ACEnemy* Enemy = Cast<ACEnemy>(InstigatorA);
 		if (Enemy != nullptr)
 		{
 			AttachToComponent(Enemy->rightComp, FAttachmentTransformRules::KeepWorldTransform);
+			bSuccess = true;
 		}
 	}
 
-	SetOwner(InstigatorA);
+	if (bSuccess)
+	{
+		SetOwner(InstigatorA);
+	}
 
 
 	//if (ParentActor == nullptr)
