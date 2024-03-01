@@ -78,7 +78,8 @@ void AVRInteractableActor_Pistol::OnMatchChanged(EMatchState CurrentMatchState)
 
 void AVRInteractableActor_Pistol::OnPickup(AActor* InstigatorA)
 {
-	if (VRGameState->GetCurrentTurn() == InstigatorA)
+	/*if (VRGameState->GetCurrentTurn() == InstigatorA)*/
+	if(VRGameState->IsCurrentTurn(InstigatorA))
 	{
 		Super::OnPickup(InstigatorA);
 		if (RespawnHandle.IsValid())

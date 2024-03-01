@@ -51,7 +51,8 @@ public:
 
 	FMatchStateChangedDelegate OnMatchStateChanged;
 	bool IsMatchState(EMatchState CheckMatchState) const;
-	AActor* GetCurrentTurn() const;
+	bool IsCurrentTurn(AActor* ActorToCheck) const;
+	/*AActor* GetCurrentTurn() const;*/
 
 	bool IsPlaying() const;
 	int GetMatchCount() const;

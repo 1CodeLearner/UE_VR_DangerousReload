@@ -178,7 +178,7 @@ void ADVRGameModeBase::OnFired(AActor* ActorInstigator, AActor* ActorAimed, bool
 		else
 		{
 			//Switch turn only if a blank was shot at other participant
-			if (VRGameState->GetCurrentTurn() != ActorAimed)
+			if(!VRGameState->IsCurrentTurn(ActorAimed))
 			{
 				VRGameState->SetCurrentTurn(ActorAimed);
 				VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_SwitchTurn);

@@ -38,11 +38,16 @@ bool AVRGameStateBase::IsMatchState(EMatchState CheckMatchState) const
 	return MatchStateEnum == CheckMatchState;
 }
 
-AActor* AVRGameStateBase::GetCurrentTurn() const
+bool AVRGameStateBase::IsCurrentTurn(AActor* ActorToCheck) const
+{
+	return CurrentTurn == ActorToCheck;
+}
+
+/*AActor* AVRGameStateBase::GetCurrentTurn() const
 {
 	if (CurrentTurn) return CurrentTurn;
 	return nullptr;
-}
+}*/
 
 void AVRGameStateBase::ChangeMatchStateTo(EMatchState MatchState)
 {

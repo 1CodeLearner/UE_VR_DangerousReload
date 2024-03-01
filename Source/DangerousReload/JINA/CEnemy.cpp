@@ -84,6 +84,8 @@ void ACEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 	gameMode = GetWorld()->GetAuthGameMode<ADVRGameModeBase>();
+	VRGameState = gameMode->GetGameState<AVRGameStateBase>();
+
 	/*Bullet Count is kept tracked by AVRInteractableActor_Pistol (Line 62-64)*/
 	//currBulletCount = gameMode->bulletCount;
 	//fakeBulletCount = currBulletCount / 2;
@@ -124,7 +126,8 @@ void ACEnemy::Tick(float DeltaTime)
 
 	// Enemy turn
 	/*if (gameMode->isPlayerTurn == false) {*/
-	if (VRGameState->GetCurrentTurn() == this) {
+	/*if (VRGameState->GetCurrentTurn() == this) {*/
+	if (VRGameState->IsCurrentTurn(this)) {
 		if (life < 4)
 		{
 			// use life item during life == 4 or all life item
@@ -181,7 +184,8 @@ void ACEnemy::Tick(float DeltaTime)
 	}
 	// player turn
 	/*else if (gameMode->isPlayerTurn)*/
-	else if (VRGameState->GetCurrentTurn() == player)
+	/*else if (VRGameState->GetCurrentTurn() == player)*/
+	else if (VRGameState->IsCurrentTurn(player))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PlayerTurn"));
 		//gun release
@@ -233,7 +237,7 @@ void ACEnemy::OnMatchStateChanged(EMatchState MatchState)
 	{
 		break;
 	}
-		//etc.
+	//etc.
 	}
 }
 
