@@ -123,7 +123,6 @@ void ADVRGameModeBase::OnMatchStateChanged(EMatchState CurrentMatchState)
 	}
 	case EMatchState::EMATCH_RoundReset:
 	{
-
 		if (VRGameState->IsCurrentTurn(Player) && Pistol->IsHeld())
 			DisplaySettingDownWeapon(true);
 		break;
@@ -137,7 +136,6 @@ void ADVRGameModeBase::OnMatchStateChanged(EMatchState CurrentMatchState)
 	}
 	case EMatchState::EMATCH_StageLost:
 	{
-
 		/*Play a Sequence or losing sound effect*/
 		SwitchStateOnTimer(EMatchState::EMATCH_RoundReset, 5.f);
 		break;
@@ -411,9 +409,4 @@ void ADVRGameModeBase::ChangeLifeLightColor(ACharacter* target, FLinearColor col
 			}*/
 		}
 	}
-}
-
-void ADVRGameModeBase::Test(int avl)
-{
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Nice: %d"), avl));
 }

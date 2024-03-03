@@ -66,8 +66,6 @@ protected:
 
 
 private:
-	UFUNCTION()
-	void Test(int avl);
 
 	UPROPERTY()
 	TObjectPtr<AVRCharacter> Player;
@@ -87,7 +85,7 @@ private:
 	//Game flow control
 	void OnMatchStateChanged(EMatchState CurrentMatchState);
 
-	//Calls PreSwitchingState after certain duration
+	//Invokes PreSwitchingState after certain duration
 	void SwitchStateOnTimer(EMatchState MatchState, float InRate);
 	//Setups before switching Match State
 	void PreSwitchingState(EMatchState MatchState);
