@@ -11,8 +11,9 @@ AVRGameStateBase::AVRGameStateBase()
 
 	bIsPlaying = false;
 	bIsFirstTimePlaying = true;
+	bFromStart = true;
 
-	MatchCount = 0;
+	StageCount = 0;
 	CurrentTurn = nullptr;
 
 	MatchStateEnum = EMatchState::EMATCH_Default;
@@ -35,7 +36,6 @@ void AVRGameStateBase::Tick(float DeltaSeconds)
 	}
 }
 
-
 bool AVRGameStateBase::IsMatchState(EMatchState CheckMatchState) const
 {
 	return MatchStateEnum == CheckMatchState;
@@ -54,8 +54,69 @@ bool AVRGameStateBase::IsCurrentTurn(AActor* ActorToCheck) const
 
 void AVRGameStateBase::ChangeMatchStateTo(EMatchState MatchState)
 {
+	switch (MatchState)
+	{
+	case EMatchState::EMATCH_Menu:
+	{
+		bIsPlaying = false;
+		break;
+	}
+	case EMatchState::EMATCH_Start:
+	{
+		bIsPlaying = true;
+		bFromStart = true;
+		if (bIsFirstTimePlaying)
+		{
+			bIsFirstTimePlaying = false;
+		}
+		break;
+	}
+	case EMatchState::EMATCH_OnGoing:
+	{
+		break;
+	}
+	case EMatchState::EMATCH_SwitchTurn:
+	{
+		if (bFromStart == true)
+		{
+			bFromStart = false;
+		}
+		break;
+	}
+	case EMatchState::EMATCH_RoundReset:
+	{
+		break;
+	}
+	case EMatchState::EMATCH_StageClear:
+	{
+		StageCount++;
+		break;
+	}
+	case EMatchState::EMATCH_StageLost:
+	{
+		break;
+	}
+	case EMatchState::EMATCH_GameClear:
+	{
+		break;
+	}
+	case EMatchState::EMATCH_GameOver:
+	{
+		break;
+	}
+	case EMatchState::EMATCH_Default:
+	{
+		break;
+	}
+	}
+
 	MatchStateEnum = MatchState;
 	OnMatchStateChanged.Broadcast(MatchStateEnum);
+}
+
+bool AVRGameStateBase::CameFromStartState() const
+{
+	return bFromStart;
 }
 
 void AVRGameStateBase::SetCurrentTurn(AActor* ActorTurn)
@@ -70,7 +131,7 @@ bool AVRGameStateBase::IsPlaying() const
 
 int AVRGameStateBase::GetMatchCount() const
 {
-	return MatchCount;
+	return StageCount;
 }
 
 FString AVRGameStateBase::GetBodyEnumAsString(EMatchState value)

@@ -47,8 +47,11 @@ void UVRHealthComponent::RecoverHealth()
 void UVRHealthComponent::SetMaxHealth(const int Health)
 {
 	MaxHealth = Health;
+	if(IsDead())
+	{
+		bIsDead = false;
+	}
 }
-
 
 bool UVRHealthComponent::IsDead() const
 {

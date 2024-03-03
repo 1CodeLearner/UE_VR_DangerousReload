@@ -39,7 +39,12 @@ void AVRButtonActor::OnMatchStateChanged(EMatchState MatchState)
 {
 	switch (MatchState)
 	{
-	case EMatchState::EMATCH_Clear:
+	case EMatchState::EMATCH_GameClear:
+	{
+		ButtonMeshComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		break;
+	}
+	case EMatchState::EMATCH_GameOver:
 	{
 		ButtonMeshComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 		break;
