@@ -119,16 +119,13 @@ void ACEnemy::Tick(float DeltaTime)
 
 	// face return
 	if (meshComp->GetRelativeLocation().X < faceLocation.X) {
-		UE_LOG(LogTemp, Warning, TEXT("Return To Face"));
+		/*UE_LOG(LogTemp, Warning, TEXT("Return To Face"));*/
 		meshComp->SetRelativeLocation(meshComp->GetRelativeLocation() + FVector(1, 0, 0));
 		return;
 	}
 
 	// Enemy turn
-		/*CHANGE TO THIS AFTER TESTING
-		 *if (VRGameState->IsCurrentTurn(this)) {
-		 */
-	if (gameMode->isPlayerTurn == false) {
+	if (CanPickupWeapon()) {
 		if (life < 4)
 		{
 			// use life item during life == 4 or all life item
@@ -153,7 +150,9 @@ void ACEnemy::Tick(float DeltaTime)
 			}
 			else
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Shot to me"));
+				GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Green, FString::Printf(TEXT("Shot to me")));
+
+				/*UE_LOG(LogTemp, Warning, TEXT("Shot to me"));*/
 				Shoot(this);
 			}
 		}
@@ -178,24 +177,19 @@ void ACEnemy::Tick(float DeltaTime)
 			// else
 
 			Shoot(player);
-			//REMOVE THIS AFTER TESTING
-			if (bIsShot == true) {
-				gameMode->isPlayerTurn = true;
-			}
 		}
 	}
 	// player turn
-	/*CHANGE TO THIS AFTER TESTING
-	 *else if (VRGameState->IsCurrentTurn(player))
-	 */
-	else if (gameMode->isPlayerTurn)
+	else if (VRGameState->IsCurrentTurn(player))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PlayerTurn"));
+		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Green, FString::Printf(TEXT("PlayerTurn")));
+		/*UE_LOG(LogTemp, Warning, TEXT("PlayerTurn"));*/
 		//gun release
 		TArray<AActor*> isChild;
 		if (rightComp->GetChildComponent(0))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("I Have Gun"));
+			GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Green, FString::Printf(TEXT("I Have Gun")));
+			//UE_LOG(LogTemp, Warning, TEXT("I Have Gun"));
 			rightComp->SetWorldLocation(rightComp->GetComponentLocation() + (player->GetActorLocation() + FVector::ForwardVector * 100 - rightComp->GetComponentLocation()).GetSafeNormal());
 			if (FVector::Distance(player->GetActorLocation(), rightComp->GetComponentLocation()) < 200)
 			{
@@ -222,6 +216,10 @@ void ACEnemy::Tick(float DeltaTime)
 		//	gameMode->isPlayerTurn = false;
 		//}
 	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Green, FString::Printf(TEXT("Jii...")));
+	}
 }
 
 // Called to bind functionality to input
@@ -242,6 +240,18 @@ void ACEnemy::OnMatchStateChanged(EMatchState MatchState)
 	}
 	case EMatchState::EMATCH_SwitchTurn:
 	{
+		if (gun)
+		{
+			gun->OnRelease(this);
+		}
+		break;
+	}
+	case EMatchState::EMATCH_RoundReset:
+	{
+		if (gun)
+		{
+			gun->OnRelease(this);
+		}
 		break;
 	}
 	//etc.
@@ -353,5 +363,10 @@ void ACEnemy::OnDead()
 	meshComp->SetRelativeLocation(FVector(-70, 0, 0));
 	rightComp->SetRelativeLocation(FVector(-70, 0, 0));
 	leftComp->SetRelativeLocation(FVector(-70, 0, 0));
+}
+
+bool ACEnemy::CanPickupWeapon()
+{
+	return VRGameState->IsCurrentTurn(this) && VRGameState->IsMatchState(EMatchState::EMATCH_OnGoing);
 }
 
