@@ -81,14 +81,101 @@ void ADVRGameModeBase::BeginPlay()
 
 void ADVRGameModeBase::OnMatchStateChanged(EMatchState CurrentMatchState)
 {
+	switch (CurrentMatchState)
+	{
+	case EMatchState::EMATCH_Menu:
+	{
+			Menu();
+		break;
+	}
+	case EMatchState::EMATCH_Start:
+	{
+		StartMatch();
+		break;
+	}
+	case EMatchState::EMATCH_OnGoing:
+	{
+		OnGoing();
+		break;
+	}
+	case EMatchState::EMATCH_Stop:
+	{
+		Stop();
+		break;
+	}
+	case EMatchState::EMATCH_SwitchTurn:
+	{
+		SwitchTurns();
+		break;
+	}
+	case EMatchState::EMATCH_RoundReset:
+	{
+		RoundReset();
+		break;
+	}
+	case EMatchState::EMATCH_StageClear:
+	{
+		StageClear();
+		break;
+	}
+	case EMatchState::EMATCH_StageLost:
+	{
+		break;
+	}
+	case EMatchState::EMATCH_GameClear:
+	{
+		GameClear();
+		break;
+	}
+	case EMatchState::EMATCH_GameOver:
+	{
+		GameOver();
+		break;
+	}
+	case EMatchState::EMATCH_Default:
+	{
+		break;
+	}
+	}
+
 	if (CurrentMatchState == EMatchState::EMATCH_Start)
 	{
 		FTimerHandle Handle;
 		GetWorld()->GetTimerManager().SetTimer(Handle, this, &ADVRGameModeBase::StartMatch, 2.f, false);
 	}
+	if (CurrentMatchState == EMatchState::EMATCH_OnGoing)
+	{
+
+	}
 }
 
-void ADVRGameModeBase::StartMatch()
+void ADVRGameModeBase::RespawnPistol()
+{
+	//Move Pistol to original Location
+	Pistol->SetActorTransform(PistolRespawnTransform);
+
+	if (VRGameState->IsMatchState(EMatchState::EMATCH_SwitchTurn))
+	{
+		FTimerHandle Handle;
+		GetWorld()->GetTimerManager().SetTimer(Handle, this, &ADVRGameModeBase::SwitchTurns, 2.f, false);
+	}
+	else if (VRGameState->IsMatchState(EMatchState::EMATCH_RoundReset))
+	{
+		FTimerHandle Handle;
+		GetWorld()->GetTimerManager().SetTimer(Handle, this, &ADVRGameModeBase::RestartMatch, 2.f, false);
+	}
+}
+
+void ADVRGameModeBase::SwitchTurns()
+{
+
+}
+
+void ADVRGameModeBase::Menu()
+{
+}
+
+void ADVRGameModeBase::Start()
 {
 	if (ensure(DT_Matches) && ensure(VRGameState))
 	{
@@ -115,6 +202,34 @@ void ADVRGameModeBase::StartMatch()
 		}
 		VRGameState->SetCurrentTurn(Player);
 	}
+}
+
+void ADVRGameModeBase::OnGoing()
+{
+}
+
+void ADVRGameModeBase::Stop()
+{
+}
+
+void ADVRGameModeBase::RoundReset()
+{
+}
+
+void ADVRGameModeBase::StageClear()
+{
+}
+
+void ADVRGameModeBase::StageLost()
+{
+}
+
+void ADVRGameModeBase::GameClear()
+{
+}
+
+void ADVRGameModeBase::GameOver()
+{
 }
 
 
@@ -178,7 +293,7 @@ void ADVRGameModeBase::OnFired(AActor* ActorInstigator, AActor* ActorAimed, bool
 		else
 		{
 			//Switch turn only if a blank was shot at other participant
-			if(!VRGameState->IsCurrentTurn(ActorAimed))
+			if (!VRGameState->IsCurrentTurn(ActorAimed))
 			{
 				VRGameState->SetCurrentTurn(ActorAimed);
 				VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_SwitchTurn);
@@ -211,31 +326,4 @@ void ADVRGameModeBase::ChangeLifeLightColor(ACharacter* target, FLinearColor col
 			}*/
 		}
 	}
-}
-
-void ADVRGameModeBase::RespawnPistol()
-{
-	//Move Pistol to original Location
-	Pistol->SetActorTransform(PistolRespawnTransform);
-
-	if (VRGameState->IsMatchState(EMatchState::EMATCH_SwitchTurn))
-	{
-		FTimerHandle Handle;
-		GetWorld()->GetTimerManager().SetTimer(Handle, this, &ADVRGameModeBase::SwitchTurns, 2.f, false);
-	}
-	else if (VRGameState->IsMatchState(EMatchState::EMATCH_RoundReset))
-	{
-		FTimerHandle Handle;
-		GetWorld()->GetTimerManager().SetTimer(Handle, this, &ADVRGameModeBase::RestartMatch, 2.f, false);
-	}
-}
-
-void ADVRGameModeBase::SwitchTurns()
-{
-	VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_OnGoing);
-}
-
-void ADVRGameModeBase::RestartMatch()
-{
-	VRGameState->ChangeMatchStateTo(EMatchState::EMATCH_Start);
 }

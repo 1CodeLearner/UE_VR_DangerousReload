@@ -27,6 +27,9 @@ void AVRGameStateBase::Tick(float DeltaSeconds)
 	{
 		//UBFL_Logging::Log(VRCharacter, FString::Printf(TEXT("GameState: %s"), *GetBodyEnumAsString(GameStateEnum)), EHand::LEFT);
 
+		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Emerald, FString::Printf(TEXT("CurrentTurn: %s"), *GetNameSafe(CurrentTurn)));
+		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Emerald, FString::Printf(TEXT("MatchState: %s"), *GetBodyEnumAsString(MatchStateEnum)));
+
 		UBFL_Logging::Log(VRCharacter, FString::Printf(TEXT("CurrentTurn: %s"), *GetNameSafe(CurrentTurn)));
 		UBFL_Logging::Log(VRCharacter, FString::Printf(TEXT("MatchState: %s"), *GetBodyEnumAsString(MatchStateEnum)), EHand::RIGHT);
 	}

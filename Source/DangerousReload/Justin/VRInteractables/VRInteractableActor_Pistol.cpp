@@ -40,6 +40,7 @@ void AVRInteractableActor_Pistol::Tick(float DeltaTime)
 	}
 	GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Magenta, FString::Printf(TEXT("Rounds Fired: %d"), RoundsIndex));
 	GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Magenta, FString::Printf(TEXT("Location: %s"), *GetActorLocation().ToString()));
+	GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Magenta, FString::Printf(TEXT("InteractingActor: %s"), *GetNameSafe(GetOwner())));
 }
 
 void AVRInteractableActor_Pistol::OnMatchChanged(EMatchState CurrentMatchState)
@@ -61,7 +62,6 @@ void AVRInteractableActor_Pistol::OnMatchChanged(EMatchState CurrentMatchState)
 	case EMatchState::EMATCH_Start:
 	{
 		bIsActive = true;
-		Reload();
 		break;
 	}
 	case EMatchState::EMATCH_Stop:
@@ -80,7 +80,7 @@ void AVRInteractableActor_Pistol::OnMatchChanged(EMatchState CurrentMatchState)
 void AVRInteractableActor_Pistol::OnPickup(AActor* InstigatorA)
 {
 	/*if (VRGameState->GetCurrentTurn() == InstigatorA)*/
-	if(CVarIgnoreTurns.GetValueOnGameThread() || VRGameState->IsCurrentTurn(InstigatorA))
+	if (CVarIgnoreTurns.GetValueOnGameThread() || VRGameState->IsCurrentTurn(InstigatorA))
 	{
 		Super::OnPickup(InstigatorA);
 		if (RespawnHandle.IsValid())
@@ -93,7 +93,7 @@ void AVRInteractableActor_Pistol::OnPickup(AActor* InstigatorA)
 
 void AVRInteractableActor_Pistol::OnRelease(AActor* InstigatorA)
 {
-	if (bIsHeld)
+	if (bIsHeld && GetOwner() == InstigatorA)
 	{
 		Super::OnRelease(InstigatorA);
 
@@ -110,9 +110,9 @@ void AVRInteractableActor_Pistol::OnRelease(AActor* InstigatorA)
 
 void AVRInteractableActor_Pistol::OnInteract(AActor* InstigatorA)
 {
-	Super::OnInteract(InstigatorA);
 	if (IsActive() && ActorInLOS)
 	{
+		Super::OnInteract(InstigatorA);
 		if (CanFire())
 		{
 			if (Rounds[RoundsIndex])

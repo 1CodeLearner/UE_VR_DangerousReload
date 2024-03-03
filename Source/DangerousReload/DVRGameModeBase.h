@@ -49,8 +49,6 @@ protected:
 protected:
 	void OnMatchStateChanged(EMatchState CurrentMatchState);
 
-	void StartMatch();
-
 public:
 	void OnFired(AActor* ActorInstigator, AActor* ActorHit, bool bIsLiveRound);
 
@@ -68,7 +66,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Settings")
 	TObjectPtr<UDataTable> DT_Matches;
 
-	void RespawnPistol();
 
 private:
 	UPROPERTY()
@@ -80,14 +77,27 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "My Settings")
 	TArray<TSubclassOf<AVRInteractableActor>> ItemClasses;
 
-	UFUNCTION()
-	void SwitchTurns();
-	UFUNCTION()
-	void RestartMatch();
+
 
 	UPROPERTY()
 	TObjectPtr<AVRGameStateBase> VRGameState;
 
 	FTransform PistolRespawnTransform;
+
+	
+	void RespawnPistol();
+	UFUNCTION()
+	void RestartMatch();
+
+	void Menu();
+	void Start();
+	void OnGoing();
+	void Stop();
+	void SwitchTurns();
+	void RoundReset();
+	void StageClear();
+	void StageLost();
+	void GameClear();
+	void GameOver();
 
 };

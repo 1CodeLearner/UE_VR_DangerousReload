@@ -20,10 +20,13 @@ enum class EMatchState : uint8
 	EMATCH_Menu UMETA(Displayname = "Menu"),
 	EMATCH_Start UMETA(DisplayName = "Start"),
 	EMATCH_OnGoing UMETA(DisplayName = "OnGoing"),
+	EMATCH_Stop UMETA(DisplayName = "Stop"),
 	EMATCH_SwitchTurn UMETA(DisplayName = "SwitchTurn"),
 	EMATCH_RoundReset UMETA(DisplayName = "RoundReset"),
-	EMATCH_StageReset UMETA(DisplayName = "StageReset"),
-	EMATCH_Stop UMETA(DisplayName = "Stop"),
+	EMATCH_StageLost UMETA(DisplayName = "StageLost"),
+	EMATCH_StageClear UMETA(DisplayName = "StageClear"),
+	EMATCH_GameOver UMETA(DisplayName = "GameOver"),
+	EMATCH_GameClear UMETA(DisplayName = "GameClear")
 };
 
 /*UENUM()

@@ -17,6 +17,12 @@ void AVRButtonActor::BeginPlay()
 {
 	Super::BeginPlay();
 	ButtonMeshComp->OnComponentBeginOverlap.AddDynamic(this, &AVRButtonActor::OnBeginOverlap);
+
+	VRGameState = GetWorld()->GetGameState<AVRGameStateBase>();
+	if (ensure(VRGameState))
+	{
+		VRGameState->OnMatchStateChanged.AddUObject(this, &AVRButtonActor::OnMatchStateChanged);
+	}
 }
 
 void AVRButtonActor::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -25,6 +31,19 @@ void AVRButtonActor::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AA
 
 	if (GameState) {
 		GameState->ChangeMatchStateTo(MatchStateToChangeTo);
+		ButtonMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+}
+
+void AVRButtonActor::OnMatchStateChanged(EMatchState MatchState)
+{
+	switch (MatchState)
+	{
+	case EMatchState::EMATCH_Clear:
+	{
+		ButtonMeshComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		break;
+	}
 	}
 }
 

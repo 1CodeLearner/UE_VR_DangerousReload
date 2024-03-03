@@ -86,6 +86,11 @@ void ACEnemy::BeginPlay()
 	gameMode = GetWorld()->GetAuthGameMode<ADVRGameModeBase>();
 	VRGameState = gameMode->GetGameState<AVRGameStateBase>();
 
+	if(VRGameState)
+	{
+		VRGameState->OnMatchStateChanged.AddUObject(this, &ACEnemy::OnMatchStateChanged);
+	}
+
 	/*Bullet Count is kept tracked by AVRInteractableActor_Pistol (Line 62-64)*/
 	//currBulletCount = gameMode->bulletCount;
 	//fakeBulletCount = currBulletCount / 2;
@@ -200,10 +205,10 @@ void ACEnemy::Tick(float DeltaTime)
 			return;
 		}
 		// if succeed
-		if (HealthComp->GetMaxHealth() != life) {
+		/*if (HealthComp->GetMaxHealth() != life) {
 			life = HealthComp->GetMaxHealth();
 			OnHealthChanged(true, HealthComp->GetMaxHealth());
-		}
+		}*/
 		// if fail
 		//
 
