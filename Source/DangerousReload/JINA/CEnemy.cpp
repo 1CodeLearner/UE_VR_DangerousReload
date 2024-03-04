@@ -86,17 +86,7 @@ void ACEnemy::BeginPlay()
 	gameMode = GetWorld()->GetAuthGameMode<ADVRGameModeBase>();
 	VRGameState = gameMode->GetGameState<AVRGameStateBase>();
 
-	if(VRGameState)
-	{
-		VRGameState->OnMatchStateChanged.AddUObject(this, &ACEnemy::OnMatchStateChanged);
-	}
-
-	/*Bullet Count is kept tracked by AVRInteractableActor_Pistol (Line 62-64)*/
-	//currBulletCount = gameMode->bulletCount;
-	//fakeBulletCount = currBulletCount / 2;
-
 	player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-
 	for (TActorIterator<AVRInteractableActor_Pistol> it(GetWorld()); it; ++it)
 	{
 		gun = *it;
@@ -124,19 +114,18 @@ void ACEnemy::Tick(float DeltaTime)
 
 	// face return
 	if (meshComp->GetRelativeLocation().X < faceLocation.X) {
-		/*UE_LOG(LogTemp, Warning, TEXT("Return To Face"));*/
+		UE_LOG(LogTemp, Warning, TEXT("Return To Face"));
 		meshComp->SetRelativeLocation(meshComp->GetRelativeLocation() + FVector(1, 0, 0));
 		return;
 	}
 
 	// Enemy turn
-	if (CanPickupWeapon()) {
-		if (life < 4)
+	if (VRGameState->IsCurrentTurn(this)) {
+		if (HealthComp->GetMaxHealth() < 4)
 		{
 			// use life item during life == 4 or all life item
 		}
 
-		/*float succeedPercent = fakeBulletCount / currBulletCount * 100;*/
 		float fakeBulletCount = gun->GetTotalRounds() - gun->GetLiveRounds();
 		float succeedPercent = fakeBulletCount / gun->GetRemainingRounds() * 100.f;
 		if (succeedPercent >= 70)
@@ -155,9 +144,7 @@ void ACEnemy::Tick(float DeltaTime)
 			}
 			else
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Green, FString::Printf(TEXT("Shot to me")));
-
-				/*UE_LOG(LogTemp, Warning, TEXT("Shot to me"));*/
+				UE_LOG(LogTemp, Warning, TEXT("Shot to me"));
 				Shoot(this);
 			}
 		}
@@ -182,19 +169,21 @@ void ACEnemy::Tick(float DeltaTime)
 			// else
 
 			Shoot(player);
+			//REMOVE THIS AFTER TESTING
+			//if (bIsShot == true) {
+			//	gameMode->isPlayerTurn = true;
+			//}
 		}
 	}
 	// player turn
 	else if (VRGameState->IsCurrentTurn(player))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Green, FString::Printf(TEXT("PlayerTurn")));
-		/*UE_LOG(LogTemp, Warning, TEXT("PlayerTurn"));*/
+		UE_LOG(LogTemp, Warning, TEXT("PlayerTurn"));
 		//gun release
 		TArray<AActor*> isChild;
 		if (rightComp->GetChildComponent(0))
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Green, FString::Printf(TEXT("I Have Gun")));
-			//UE_LOG(LogTemp, Warning, TEXT("I Have Gun"));
+			UE_LOG(LogTemp, Warning, TEXT("I Have Gun"));
 			rightComp->SetWorldLocation(rightComp->GetComponentLocation() + (player->GetActorLocation() + FVector::ForwardVector * 100 - rightComp->GetComponentLocation()).GetSafeNormal());
 			if (FVector::Distance(player->GetActorLocation(), rightComp->GetComponentLocation()) < 200)
 			{
@@ -205,10 +194,22 @@ void ACEnemy::Tick(float DeltaTime)
 			return;
 		}
 		// if succeed
-		/*if (HealthComp->GetMaxHealth() != life) {
+		if (HealthComp->GetMaxHealth() != life) {
+			int32 gap = life - HealthComp->GetMaxHealth();
+			if (gap > 0)
+			{
+				for (int32 i = 0; i < gap; ++i) {
+					OnHealthChanged(true, HealthComp->GetMaxHealth());
+				}
+			}
+			else
+			{
+				for (int32 i = 0; i > gap; --i) {
+					OnHealthChanged(true, HealthComp->GetMaxHealth());
+				}
+			}
 			life = HealthComp->GetMaxHealth();
-			OnHealthChanged(true, HealthComp->GetMaxHealth());
-		}*/
+		}
 		// if fail
 		//
 
@@ -220,10 +221,6 @@ void ACEnemy::Tick(float DeltaTime)
 		//	fakeBulletCount -= 1;
 		//	gameMode->isPlayerTurn = false;
 		//}
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Green, FString::Printf(TEXT("Jii...")));
 	}
 }
 
@@ -245,18 +242,6 @@ void ACEnemy::OnMatchStateChanged(EMatchState MatchState)
 	}
 	case EMatchState::EMATCH_SwitchTurn:
 	{
-		if (gun)
-		{
-			gun->OnRelease(this);
-		}
-		break;
-	}
-	case EMatchState::EMATCH_RoundReset:
-	{
-		if (gun)
-		{
-			gun->OnRelease(this);
-		}
 		break;
 	}
 	//etc.
@@ -332,19 +317,17 @@ void ACEnemy::ShotGun(ACharacter* target)
 	gun->SetActorRelativeRotation(rightComp->GetComponentRotation());
 	/*gun->shoot*/
 
-	/*gun->ActorInLOS = target;*/
 	gun->SetActorInLOS(target);
-
-	/*if (gun->bCanFire == false)*/
-	/*if(gun->CanFire())*/
 
 	if (!gun->IsRacked())
 	{
 		gun->RackPistol();
 	}
 
-	gun->OnInteract(target);
-	bIsShot = true;
+	if (bIsShot == false) {
+		gun->OnInteract(target);
+		bIsShot = true;
+	}
 }
 
 void ACEnemy::OnHealthChanged(bool bDamaged, int HealthRemaining)
@@ -353,7 +336,6 @@ void ACEnemy::OnHealthChanged(bool bDamaged, int HealthRemaining)
 	UE_LOG(LogTemp, Warning, TEXT("%s: Health Changed"), *GetNameSafe(this));
 	if (bDamaged) {
 		meshComp->SetRelativeLocation(meshComp->GetRelativeLocation() - FVector(500, 0, 0));
-		/*gameMode->isPlayerTurn = false;*/
 		//currBulletCount -= 1;
 		if (HealthComp->IsDead())
 		{
@@ -368,10 +350,5 @@ void ACEnemy::OnDead()
 	meshComp->SetRelativeLocation(FVector(-70, 0, 0));
 	rightComp->SetRelativeLocation(FVector(-70, 0, 0));
 	leftComp->SetRelativeLocation(FVector(-70, 0, 0));
-}
-
-bool ACEnemy::CanPickupWeapon()
-{
-	return VRGameState->IsCurrentTurn(this) && VRGameState->IsMatchState(EMatchState::EMATCH_OnGoing);
 }
 
