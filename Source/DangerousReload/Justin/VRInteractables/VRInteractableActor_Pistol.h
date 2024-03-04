@@ -33,8 +33,12 @@ public:
 
 	void SetActorInLOS(AActor* OtherActor);
 
+	// have to use in BP Desk, so changed - by JINA
+	UFUNCTION(BlueprintCallable)
 	float GetLiveRounds() const;
+	UFUNCTION(BlueprintCallable)
 	float GetTotalRounds() const;
+	UFUNCTION(BlueprintCallable)
 	float GetRemainingRounds() const;
 
 protected:
