@@ -5,7 +5,13 @@
 
 ACHealthItem::ACHealthItem()
 {
-
+	btnComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Button Component"));
+	btnComp->SetupAttachment(RootComponent);
+	ConstructorHelpers::FObjectFinder<UStaticMesh> tempMesh(TEXT(""));
+	if (tempMesh.Succeeded())
+	{
+		btnComp->SetStaticMesh(tempMesh.Object);
+	}
 }
 
 void ACHealthItem::Tick(float DeltaTime)
@@ -13,6 +19,7 @@ void ACHealthItem::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	//if push
+
 
 }
 

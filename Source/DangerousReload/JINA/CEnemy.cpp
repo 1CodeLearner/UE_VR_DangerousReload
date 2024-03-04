@@ -190,6 +190,7 @@ void ACEnemy::Tick(float DeltaTime)
 				gun->OnRelease(this);
 				rightComp->SetRelativeLocation(FVector(70, 20, -10));
 				rightComp->SetRelativeRotation(FRotator(0, -90, 0));
+				currentObject = nullptr;
 			}
 			return;
 		}

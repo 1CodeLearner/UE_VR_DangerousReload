@@ -20,6 +20,7 @@ class DANGEROUSRELOAD_API ACHealthItem : public AVRInteractableActor
 	virtual void OnInteract(AActor* InstigatorA) override;
 
 public:
+	UStaticMeshComponent* btnComp;
 	class AVRPlayer* player;
 	class ACEnemy* enemy;
 };
