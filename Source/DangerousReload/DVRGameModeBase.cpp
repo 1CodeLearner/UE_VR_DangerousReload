@@ -9,6 +9,7 @@
 #include "JINA/CSpotLightActor.h"
 #include "Justin/VRInteractables/VRInteractableActor_Pistol.h"
 #include "VRGameStateBase.h"
+#include <Components/SpotLightComponent.h>
 
 ADVRGameModeBase::ADVRGameModeBase()
 {
@@ -57,11 +58,13 @@ void ADVRGameModeBase::BeginPlay()
 	}
 
 	TArray<ACSpotLightActor*> lifeLight;
+	lifeLight.Empty();
 	for (TActorIterator<ACSpotLightActor> it(GetWorld()); it; ++it) {
 		lifeLight.Add(*it);
 	}
 	if (!lifeLight.IsEmpty())
 	{
+		playerLifeSpotlight.Empty();
 		for (int32 i = 0; i < 4; ++i)
 		{
 			playerLifeSpotlight.Add(Cast<ACSpotLightActor>(lifeLight[i]));
@@ -390,23 +393,23 @@ void ADVRGameModeBase::ChangeLifeLightColor(ACharacter* target, FLinearColor col
 {
 	if (Cast<AVRCharacter>(target) != nullptr) {
 		for (int32 i = 0; i < playerLifeSpotlight.Num(); i++) {
-			//if (playerLifeSpotlight[i]->spotLight->GetLightColor() == color) continue;
-			//else
-			//{
-			//	playerLifeSpotlight[i]->spotLight->SetLightColor(color);
-			//	break;
-			//}
+			if (playerLifeSpotlight[i] !=nullptr && playerLifeSpotlight[i]->spotLight->GetLightColor() == color) continue;
+			else
+			{
+				playerLifeSpotlight[i]->spotLight->SetLightColor(color);
+				break;
+			}
 		}
 	}
 	else
 	{
 		for (int32 i = 0; i < enemyLifeSpotlight.Num(); i++) {
-			/*if(enemyLifeSpotlight[i]->spotLight->GetLightColor() == color) continue;
+			if (enemyLifeSpotlight[i]->spotLight->GetLightColor() == color) continue;
 			else
 			{
 				enemyLifeSpotlight[i]->spotLight->SetLightColor(color);
 				break;
-			}*/
+			}
 		}
 	}
 }

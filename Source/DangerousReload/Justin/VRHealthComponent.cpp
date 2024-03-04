@@ -6,7 +6,7 @@
 UVRHealthComponent::UVRHealthComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	MaxHealth = 1;
+	MaxHealth = 4;
 	bIsDead = false;
 }
 

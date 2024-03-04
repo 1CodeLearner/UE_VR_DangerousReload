@@ -78,6 +78,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Input")
 	TObjectPtr<UInputAction> IA_RThumbAButtonPress;
 
+public:
 	//Gameplay Components
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
 	TObjectPtr<UVRHealthComponent> HealthComp;

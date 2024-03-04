@@ -59,6 +59,7 @@ public:
 	bool bIsShot = false;
 	FTimerHandle timerHandle;
 	bool bTimerRun = false;
+	float trueBulletCount;
 
 	UPROPERTY(VisibleAnywhere, Category = "MySettings")
 	class UVRHealthComponent* HealthComp;
