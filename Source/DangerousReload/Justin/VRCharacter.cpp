@@ -85,7 +85,7 @@ void AVRCharacter::BeginPlay()
 		}
 	}
 
-	UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Floor);
+	UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Eye);
 
 	HealthComp->OnHealthChanged.AddUObject(this, &AVRCharacter::OnHealthChange);
 	HealthComp->OnDead.AddUObject(this, &AVRCharacter::OnDead);
@@ -142,8 +142,6 @@ void AVRCharacter::Tick(float DeltaTime)
 			RInteractingActor = nullptr;
 		}
 	}
-
-	GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Magenta, FString::Printf(TEXT("InteractingActor: %s"), *GetNameSafe(RInteractingActor)));
 }
 
 // Called to bind functionality to input

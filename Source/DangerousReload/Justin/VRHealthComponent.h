@@ -20,8 +20,6 @@ public:
 
 	void SetMaxHealth(const int MaxHealth);
 
-	void SetIsDead(bool value);
-
 	void InflictDamage();
 
 	void RecoverHealth();

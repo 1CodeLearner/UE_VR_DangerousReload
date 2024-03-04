@@ -73,4 +73,6 @@ public:
 	void OnHealthChanged(bool bDamaged, int HealthRemaining);
 	UFUNCTION()
 	void OnDead();
+
+	bool CanPickupWeapon();
 };

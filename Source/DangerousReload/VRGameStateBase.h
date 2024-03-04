@@ -22,8 +22,10 @@ enum class EMatchState : uint8
 	EMATCH_OnGoing UMETA(DisplayName = "OnGoing"),
 	EMATCH_SwitchTurn UMETA(DisplayName = "SwitchTurn"),
 	EMATCH_RoundReset UMETA(DisplayName = "RoundReset"),
-	EMATCH_StageReset UMETA(DisplayName = "StageReset"),
-	EMATCH_Stop UMETA(DisplayName = "Stop"),
+	EMATCH_StageLost UMETA(DisplayName = "StageLost"),
+	EMATCH_StageClear UMETA(DisplayName = "StageClear"),
+	EMATCH_GameOver UMETA(DisplayName = "GameOver"),
+	EMATCH_GameClear UMETA(DisplayName = "GameClear")
 };
 
 /*UENUM()
@@ -57,7 +59,6 @@ public:
 	bool IsPlaying() const;
 	int GetMatchCount() const;
 
-
 private:
 	
 	/*Only these classes can change the state of the game:*/
@@ -66,13 +67,16 @@ private:
 
 	void ChangeMatchStateTo(EMatchState MatchState);
 	void SetCurrentTurn(AActor* ActorTurn);
-	bool bIsFirstTimePlaying;
-	bool bIsPlaying;
 
 	UPROPERTY()
 	AActor* CurrentTurn;
 
-	int MatchCount;
+	bool bIsFirstTimePlaying;
+	bool bIsPlaying;
+	bool bFromStart;
+	bool CameFromStartState() const;
+
+	int StageCount;
 	EMatchState MatchStateEnum;
 	
 	FString GetBodyEnumAsString(EMatchState value);

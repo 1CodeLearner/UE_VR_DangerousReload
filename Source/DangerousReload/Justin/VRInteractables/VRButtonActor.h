@@ -6,15 +6,16 @@
 #include "GameFramework/Actor.h"
 #include "VRButtonActor.generated.h"
 
+class AVRGameStateBase;
 enum class EMatchState : uint8;
-class USkeletalMeshComponent; 
+class USkeletalMeshComponent;
 
 UCLASS()
 class DANGEROUSRELOAD_API AVRButtonActor : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	AVRButtonActor();
 
 protected:
@@ -28,4 +29,11 @@ protected:
 
 	UFUNCTION()
 	void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+private:
+	UPROPERTY()
+	TObjectPtr<AVRGameStateBase> VRGameState;
+
+	void OnMatchStateChanged(EMatchState MatchState);
+	
 };

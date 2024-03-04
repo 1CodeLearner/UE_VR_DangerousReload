@@ -11,6 +11,8 @@
  */
 
 DECLARE_DELEGATE(FWeaponDroppedDelegate);
+DECLARE_DELEGATE(FWeaponPickedUpDelegate);
+DECLARE_DELEGATE_ThreeParams(FFiredDelegate, AActor* ActorInstigator, AActor* ActorAimed, bool bIsLiveRound);
 
 UCLASS()
 class DANGEROUSRELOAD_API AVRInteractableActor_Pistol : public AVRInteractableActor
@@ -20,6 +22,9 @@ public:
 	AVRInteractableActor_Pistol();
 
 	FWeaponDroppedDelegate OnWeaponDropped;
+	FWeaponPickedUpDelegate OnWeaponPickedUp;
+	FFiredDelegate OnFired;
+
 
 	virtual void Tick(float DeltaTime) override;
 
@@ -29,7 +34,8 @@ public:
 
 	bool IsRacked() const;
 	void RackPistol();
-	bool CanFire() const;
+	bool IsEmpty() const;
+	bool IsHeld() const;
 
 	void SetActorInLOS(AActor* OtherActor);
 
@@ -70,9 +76,9 @@ private:
 	int LiveRounds;
 	TArray<bool> Rounds;
 	int RoundsIndex;
-	void Reload();
 
-	FTimerHandle RespawnHandle;
-	UFUNCTION()
-	void RespawnWeapon();
+	//Only this class can reload the weapon
+	friend class ADVRGameModeBase;
+
+	void Reload();
 };

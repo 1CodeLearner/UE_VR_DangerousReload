@@ -40,6 +40,7 @@ void AVRInteractableActor_Pistol::Tick(float DeltaTime)
 	}
 	GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Magenta, FString::Printf(TEXT("Rounds Fired: %d"), RoundsIndex));
 	GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Magenta, FString::Printf(TEXT("Location: %s"), *GetActorLocation().ToString()));
+	GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Magenta, FString::Printf(TEXT("InteractingActor: %s"), *GetNameSafe(GetOwner())));
 }
 
 void AVRInteractableActor_Pistol::OnMatchChanged(EMatchState CurrentMatchState)
@@ -61,12 +62,6 @@ void AVRInteractableActor_Pistol::OnMatchChanged(EMatchState CurrentMatchState)
 	case EMatchState::EMATCH_Start:
 	{
 		bIsActive = true;
-		Reload();
-		break;
-	}
-	case EMatchState::EMATCH_Stop:
-	{
-		bIsActive = false;
 		break;
 	}
 	case EMatchState::EMATCH_RoundReset:
@@ -80,40 +75,32 @@ void AVRInteractableActor_Pistol::OnMatchChanged(EMatchState CurrentMatchState)
 void AVRInteractableActor_Pistol::OnPickup(AActor* InstigatorA)
 {
 	/*if (VRGameState->GetCurrentTurn() == InstigatorA)*/
-	if(CVarIgnoreTurns.GetValueOnGameThread() || VRGameState->IsCurrentTurn(InstigatorA))
+	if (CVarIgnoreTurns.GetValueOnGameThread() || VRGameState->IsCurrentTurn(InstigatorA))
 	{
 		Super::OnPickup(InstigatorA);
-		if (RespawnHandle.IsValid())
-		{
-			GetWorld()->GetTimerManager().ClearTimer(RespawnHandle);
-		}
 		bIsHeld = true;
+		OnWeaponPickedUp.Execute();
 	}
 }
 
 void AVRInteractableActor_Pistol::OnRelease(AActor* InstigatorA)
 {
-	if (bIsHeld)
+	if (bIsHeld && GetOwner() == InstigatorA)
 	{
 		Super::OnRelease(InstigatorA);
 
 		UBFL_Logging::GEngineLog(FString::Printf(TEXT("Putting weapon back on the table...")));
-		if (RespawnHandle.IsValid())
-		{
-			GetWorld()->GetTimerManager().ClearTimer(RespawnHandle);
-		}
-		GetWorld()->GetTimerManager().SetTimer(RespawnHandle, this, &AVRInteractableActor_Pistol::RespawnWeapon, 2.f, false);
-
 		bIsHeld = false;
+		OnWeaponDropped.Execute();
 	}
 }
 
 void AVRInteractableActor_Pistol::OnInteract(AActor* InstigatorA)
 {
-	Super::OnInteract(InstigatorA);
 	if (IsActive() && ActorInLOS)
 	{
-		if (CanFire())
+		Super::OnInteract(InstigatorA);
+		if (!IsEmpty())
 		{
 			if (Rounds[RoundsIndex])
 			{
@@ -126,7 +113,7 @@ void AVRInteractableActor_Pistol::OnInteract(AActor* InstigatorA)
 				UGameplayStatics::PlaySoundAtLocation(GetOwner(), EmptyGunSound, GetOwner()->GetActorLocation(), FRotator::ZeroRotator);
 			}
 			RoundsIndex++;
-			gameMode->OnFired(GetOwner(), ActorInLOS, Rounds[RoundsIndex - 1]);
+			OnFired.Execute(GetOwner(), ActorInLOS, Rounds[RoundsIndex - 1]);
 		}
 		else
 		{
@@ -156,9 +143,14 @@ void AVRInteractableActor_Pistol::RackPistol()
 	}
 }
 
-bool AVRInteractableActor_Pistol::CanFire() const
+bool AVRInteractableActor_Pistol::IsEmpty() const
 {
-	return RoundsIndex < Rounds.Num();
+	return RoundsIndex >= Rounds.Num();
+}
+
+bool AVRInteractableActor_Pistol::IsHeld() const
+{
+	return bIsHeld;
 }
 
 void AVRInteractableActor_Pistol::Reload()
@@ -283,9 +275,4 @@ float AVRInteractableActor_Pistol::GetTotalRounds() const
 float AVRInteractableActor_Pistol::GetRemainingRounds() const
 {
 	return (float)(Rounds.Num() - RoundsIndex);
-}
-
-void AVRInteractableActor_Pistol::RespawnWeapon()
-{
-	OnWeaponDropped.Execute();
 }
