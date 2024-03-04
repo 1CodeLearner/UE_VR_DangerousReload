@@ -14,4 +14,12 @@ class DANGEROUSRELOAD_API ACHealthItem : public AVRInteractableActor
 {
 	GENERATED_BODY()
 	
+	ACHealthItem();
+
+	virtual void Tick(float DeltaTime) override;
+	virtual void OnInteract(AActor* InstigatorA) override;
+
+public:
+	class AVRPlayer* player;
+	class ACEnemy* enemy;
 };
