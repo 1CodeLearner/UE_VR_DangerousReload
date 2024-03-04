@@ -13,11 +13,11 @@
 #include "../VRInteractInterface.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "VRHealthComponent.h"
-#include "DangerousReload/DVRGameModeBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "VRInteractables/VRInteractableActor_Pistol.h"
-#include <../../../../../../../Source/Runtime/Engine/Classes/Kismet/GameplayStatics.h>
 #include "VRHandAnim.h"
+#include "EngineUtils.h"
+#include "DangerousReload/VRGameStateBase.h"
 
 // Sets default values
 AVRCharacter::AVRCharacter()
@@ -69,8 +69,13 @@ AVRCharacter::AVRCharacter()
 	HealthComp = CreateDefaultSubobject<UVRHealthComponent>("HealthComp");
 
 	//Start with VR fingers pointing 
-	RHTriggerTouch = true; 
-	LHTriggerTouch = true; 
+	RHTriggerTouch = true;
+	LHTriggerTouch = true;
+	RHThumbTouch = true;
+	LHThumbTouch = true;
+
+	bIsGripping = false;
+	bIsHoldingWeapon = false;
 }
 
 // Called when the game starts or when spawned
@@ -99,13 +104,26 @@ void AVRCharacter::BeginPlay()
 	if (ensure(LeftHandAnim))
 	{
 		LeftHandAnim->bMirrored = true;
-	}	
+	}
 	auto rightHandAnim = Cast<UVRHandAnim>(RHandSKMComp->GetAnimInstance());
 	if (rightHandAnim != nullptr)
 	{
 		rightHandAnim->bMirrored = false;
 	}
 
+	for (TActorIterator<AVRInteractableActor_Pistol> it(GetWorld()); it; ++it)
+	{
+		if (!Weapon && *it)
+		{
+			Weapon = *it;
+		}
+	}
+
+	if (ensure(Weapon))
+	{
+		Weapon->OnWeaponPickedUp.AddUObject(this, &AVRCharacter::OnWeaponPickedup);
+		Weapon->OnWeaponDropped.AddUObject(this, &AVRCharacter::OnWeaponDropped);
+	}
 }
 
 // Called every frame
@@ -300,11 +318,24 @@ void AVRCharacter::OnDead()
 
 void AVRCharacter::RackPistol()
 {
-	auto Pistol = Cast<AVRInteractableActor_Pistol>(RInteractingActor);
-	if (Pistol)
+	if (ensure(Weapon))
 	{
-		Pistol->RackPistol();
+		Weapon->RackPistol();
 	}
+}
+
+void AVRCharacter::OnWeaponPickedup()
+{
+	auto VRGameState = GetWorld()->GetGameState<AVRGameStateBase>();
+	if (VRGameState && VRGameState->IsCurrentTurn(this))
+	{
+		bIsHoldingWeapon = true;
+	}
+}
+
+void AVRCharacter::OnWeaponDropped()
+{
+	bIsHoldingWeapon = false;
 }
 
 void AVRCharacter::FadeOut()

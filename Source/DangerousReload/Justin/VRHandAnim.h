@@ -15,6 +15,8 @@ UCLASS()
 class DANGEROUSRELOAD_API UVRHandAnim : public UAnimInstance
 {
 	GENERATED_BODY()
+public:
+	UVRHandAnim();
 protected:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
@@ -25,12 +27,23 @@ protected:
 	TObjectPtr<AVRCharacter> VRPlayer;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings")
 	float RightGripAlpha;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings")
 	float IndexTriggerAlpha;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings")
 	float CurrentIndexTouchValue;
-	UPROPERTY()
 	float TargetIndexTouchValue;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings")
+	float CurrentThumbTouchValue;
+	float TargetThumbTouchValue;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	float LerpRate;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings")
 	bool bMirrored;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Settings")
+	bool bGrippingWeapon;
 };

@@ -7,6 +7,7 @@
 #include "InputActionValue.h"
 #include "VRCharacter.generated.h"
 
+class AVRInteractableActor_Pistol;
 class UVRHealthComponent;
 class UCameraComponent;
 class UStaticMeshComponent;
@@ -153,6 +154,7 @@ protected:
 
 private:
 	bool bIsGripping;
+
 	UPROPERTY()
 	AActor* RInteractingActor;
 
@@ -164,5 +166,10 @@ private:
 	UFUNCTION()
 	void GameOver();
 
+	TObjectPtr<AVRInteractableActor_Pistol> Weapon;
+
 	void RackPistol();
+	void OnWeaponPickedup();
+	void OnWeaponDropped();
+	bool bIsHoldingWeapon;
 };

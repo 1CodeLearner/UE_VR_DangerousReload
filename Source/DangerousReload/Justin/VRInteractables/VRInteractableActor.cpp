@@ -71,7 +71,9 @@ void AVRInteractableActor::OnPickup(AActor* InstigatorA)
 	AVRCharacter* VRCharacter = Cast<AVRCharacter>(InstigatorA);
 	if (VRCharacter != nullptr)
 	{
-		AttachToComponent(VRCharacter->RHandSKMComp, FAttachmentTransformRules::KeepWorldTransform);
+		/*AttachToComponent(VRCharacter->RHandSKMComp, FAttachmentTransformRules::KeepWorldTransform);*/\
+		FAttachmentTransformRules Rules = FAttachmentTransformRules::SnapToTargetNotIncludingScale;
+		AttachToComponent(VRCharacter->RHandSKMComp, Rules, FName("WeaponSocket"));
 		bSuccess = true;
 	}
 	else {

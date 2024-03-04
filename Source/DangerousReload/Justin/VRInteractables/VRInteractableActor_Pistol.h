@@ -10,8 +10,8 @@
  *
  */
 
-DECLARE_DELEGATE(FWeaponDroppedDelegate);
-DECLARE_DELEGATE(FWeaponPickedUpDelegate);
+DECLARE_MULTICAST_DELEGATE(FWeaponDroppedDelegate);
+DECLARE_MULTICAST_DELEGATE(FWeaponPickedUpDelegate);
 DECLARE_DELEGATE_ThreeParams(FFiredDelegate, AActor* ActorInstigator, AActor* ActorAimed, bool bIsLiveRound);
 
 UCLASS()
@@ -48,7 +48,7 @@ public:
 	float GetRemainingRounds() const;
 
 protected:
-	UPROPERTY(EditDefaultsOnly, Category = "Pistol")
+	UPROPERTY(EditDefaultsOnly, Category = "Settings")
 	TObjectPtr<UAnimSequence> FireSequenceAnim;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Settings")

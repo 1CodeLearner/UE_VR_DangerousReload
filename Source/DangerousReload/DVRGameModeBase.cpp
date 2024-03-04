@@ -50,8 +50,8 @@ void ADVRGameModeBase::BeginPlay()
 
 	if (ensure(Pistol))
 	{
-		Pistol->OnWeaponPickedUp.BindUObject(this, &ADVRGameModeBase::OnPickedUp);
-		Pistol->OnWeaponDropped.BindUObject(this, &ADVRGameModeBase::OnDropped);
+		Pistol->OnWeaponPickedUp.AddUObject(this, &ADVRGameModeBase::OnPickedUp);
+		Pistol->OnWeaponDropped.AddUObject(this, &ADVRGameModeBase::OnDropped);
 		Pistol->OnFired.BindUObject(this, &ADVRGameModeBase::OnFired);
 		PistolRespawnTransform = Pistol->GetActorTransform();
 	}

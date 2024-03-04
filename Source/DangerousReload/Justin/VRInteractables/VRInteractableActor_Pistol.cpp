@@ -79,7 +79,7 @@ void AVRInteractableActor_Pistol::OnPickup(AActor* InstigatorA)
 	{
 		Super::OnPickup(InstigatorA);
 		bIsHeld = true;
-		OnWeaponPickedUp.Execute();
+		OnWeaponPickedUp.Broadcast();
 	}
 }
 
@@ -91,7 +91,7 @@ void AVRInteractableActor_Pistol::OnRelease(AActor* InstigatorA)
 
 		UBFL_Logging::GEngineLog(FString::Printf(TEXT("Putting weapon back on the table...")));
 		bIsHeld = false;
-		OnWeaponDropped.Execute();
+		OnWeaponDropped.Broadcast();
 	}
 }
 
