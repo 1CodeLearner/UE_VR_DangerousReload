@@ -17,6 +17,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "VRInteractables/VRInteractableActor_Pistol.h"
 #include <../../../../../../../Source/Runtime/Engine/Classes/Kismet/GameplayStatics.h>
+#include "VRHandAnim.h"
 
 // Sets default values
 AVRCharacter::AVRCharacter()
@@ -66,6 +67,10 @@ AVRCharacter::AVRCharacter()
 	GetCharacterMovement()->GravityScale = 0.f;
 
 	HealthComp = CreateDefaultSubobject<UVRHealthComponent>("HealthComp");
+
+	//Start with VR fingers pointing 
+	RHTriggerTouch = true; 
+	LHTriggerTouch = true; 
 }
 
 // Called when the game starts or when spawned
@@ -89,6 +94,18 @@ void AVRCharacter::BeginPlay()
 
 	HealthComp->OnHealthChanged.AddUObject(this, &AVRCharacter::OnHealthChange);
 	HealthComp->OnDead.AddUObject(this, &AVRCharacter::OnDead);
+
+	auto LeftHandAnim = Cast<UVRHandAnim>(LHandSKMComp->GetAnimInstance());
+	if (ensure(LeftHandAnim))
+	{
+		LeftHandAnim->bMirrored = true;
+	}	
+	auto rightHandAnim = Cast<UVRHandAnim>(RHandSKMComp->GetAnimInstance());
+	if (rightHandAnim != nullptr)
+	{
+		rightHandAnim->bMirrored = false;
+	}
+
 }
 
 // Called every frame
@@ -150,14 +167,82 @@ void AVRCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	auto EnhancedInput = Cast<UEnhancedInputComponent>(PlayerInputComponent);
+
+	//Pistol Interaction
 	EnhancedInput->BindAction(IA_RHandGripPress, ETriggerEvent::Started, this, &AVRCharacter::OnRightGrip);
 	EnhancedInput->BindAction(IA_RHandGripPress, ETriggerEvent::Completed, this, &AVRCharacter::OnRightGrip);
-
 	EnhancedInput->BindAction(IA_RHandTriggerPress, ETriggerEvent::Started, this, &AVRCharacter::OnRightTrigger);
-
 	EnhancedInput->BindAction(IA_RHandTriggerPress, ETriggerEvent::Started, this, &AVRCharacter::OnRightTrigger);
-
 	EnhancedInput->BindAction(IA_RThumbAButtonPress, ETriggerEvent::Started, this, &AVRCharacter::RackPistol);
+
+	//Hand Animation 
+	EnhancedInput->BindAction(IA_RGripAxis, ETriggerEvent::Started, this, &AVRCharacter::RightHandGripAxis);
+	EnhancedInput->BindAction(IA_RGripAxis, ETriggerEvent::Triggered, this, &AVRCharacter::RightHandGripAxis);
+	EnhancedInput->BindAction(IA_RGripAxis, ETriggerEvent::Completed, this, &AVRCharacter::RightHandGripAxis);
+
+	EnhancedInput->BindAction(IA_RTriggerAxis, ETriggerEvent::Started, this, &AVRCharacter::RightHandTriggerAxis);
+	EnhancedInput->BindAction(IA_RTriggerAxis, ETriggerEvent::Triggered, this, &AVRCharacter::RightHandTriggerAxis);
+	EnhancedInput->BindAction(IA_RTriggerAxis, ETriggerEvent::Completed, this, &AVRCharacter::RightHandTriggerAxis);
+
+	EnhancedInput->BindAction(IA_RTriggerTouch, ETriggerEvent::Started, this, &AVRCharacter::RightHandTriggerTouch);
+	EnhancedInput->BindAction(IA_RTriggerTouch, ETriggerEvent::Completed, this, &AVRCharacter::RightHandTriggerTouch);
+
+	EnhancedInput->BindAction(IA_RThumbTouch, ETriggerEvent::Started, this, &AVRCharacter::RightHandThumbTouch);
+	EnhancedInput->BindAction(IA_RThumbTouch, ETriggerEvent::Completed, this, &AVRCharacter::RightHandThumbTouch);
+
+	EnhancedInput->BindAction(IA_LGripAxis, ETriggerEvent::Started, this, &AVRCharacter::LeftHandGripAxis);
+	EnhancedInput->BindAction(IA_LGripAxis, ETriggerEvent::Triggered, this, &AVRCharacter::LeftHandGripAxis);
+	EnhancedInput->BindAction(IA_LGripAxis, ETriggerEvent::Completed, this, &AVRCharacter::LeftHandGripAxis);
+
+	EnhancedInput->BindAction(IA_LTriggerAxis, ETriggerEvent::Started, this, &AVRCharacter::LeftHandTriggerAxis);
+	EnhancedInput->BindAction(IA_LTriggerAxis, ETriggerEvent::Triggered, this, &AVRCharacter::LeftHandTriggerAxis);
+	EnhancedInput->BindAction(IA_LTriggerAxis, ETriggerEvent::Completed, this, &AVRCharacter::LeftHandTriggerAxis);
+
+	EnhancedInput->BindAction(IA_LTriggerTouch, ETriggerEvent::Started, this, &AVRCharacter::LeftHandTriggerTouch);
+	EnhancedInput->BindAction(IA_LTriggerTouch, ETriggerEvent::Completed, this, &AVRCharacter::LeftHandTriggerTouch);
+
+	EnhancedInput->BindAction(IA_LThumbTouch, ETriggerEvent::Started, this, &AVRCharacter::LeftHandThumbTouch);
+	EnhancedInput->BindAction(IA_LThumbTouch, ETriggerEvent::Completed, this, &AVRCharacter::LeftHandThumbTouch);
+}
+
+void AVRCharacter::RightHandGripAxis(const FInputActionValue& ActionValue)
+{
+	RightHandGripValue = ActionValue.Get<float>();
+}
+
+void AVRCharacter::LeftHandGripAxis(const FInputActionValue& ActionValue)
+{
+	LeftHandGripValue = ActionValue.Get<float>();
+}
+
+void AVRCharacter::RightHandTriggerTouch(const FInputActionValue& ActionValue)
+{
+	RHTriggerTouch = !ActionValue.Get<bool>();
+}
+
+void AVRCharacter::RightHandTriggerAxis(const FInputActionValue& ActionValue)
+{
+	RHTriggerAxis = ActionValue.Get<float>();
+}
+
+void AVRCharacter::RightHandThumbTouch(const FInputActionValue& ActionValue)
+{
+	RHThumbTouch = !ActionValue.Get<bool>();
+}
+
+void AVRCharacter::LeftHandTriggerTouch(const FInputActionValue& ActionValue)
+{
+	LHTriggerTouch = !ActionValue.Get<bool>();
+}
+
+void AVRCharacter::LeftHandTriggerAxis(const FInputActionValue& ActionValue)
+{
+	LHTriggerAxis = ActionValue.Get<float>();
+}
+
+void AVRCharacter::LeftHandThumbTouch(const FInputActionValue& ActionValue)
+{
+	LHThumbTouch = !ActionValue.Get<bool>();
 }
 
 void AVRCharacter::OnRightGrip(const FInputActionValue& Value)
@@ -200,7 +285,7 @@ void AVRCharacter::OnDead()
 	if (PC)
 	{
 		PC->PlayerCameraManager->StartCameraFade(0, 1, .01f, FColor::Black, false, true);
-		
+
 		/*
 		FTimerHandle Handle;
 		GetWorld()->GetTimerManager().SetTimer(Handle, this, &AVRCharacter::GameOver, 2.f, false);*/
@@ -216,7 +301,7 @@ void AVRCharacter::OnDead()
 void AVRCharacter::RackPistol()
 {
 	auto Pistol = Cast<AVRInteractableActor_Pistol>(RInteractingActor);
-	if (Pistol) 
+	if (Pistol)
 	{
 		Pistol->RackPistol();
 	}
