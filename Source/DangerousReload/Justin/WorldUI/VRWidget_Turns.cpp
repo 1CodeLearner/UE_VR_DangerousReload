@@ -22,7 +22,7 @@ void UVRWidget_Turns::Display(bool bEnable)
 
 	if (VRGameState && Character) 
 	{
-		FText Output = FText::FromString(FString::Printf(TEXT("%s"), VRGameState->IsCurrentTurn(Character) ? TEXT("Player") : TEXT("Dealer")));
+		FText Output = FText::FromString(FString::Printf(TEXT("%s"), VRGameState->IsCurrentTurn(Cast<AActor>(Character)) ? TEXT("Player") : TEXT("Dealer")));
 		TurnsText->SetText(Output);
 	}
 }

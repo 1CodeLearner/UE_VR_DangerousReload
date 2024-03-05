@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Justin/WidgetDisplayActor.h"
+#include "WidgetDisplayActor.h"
 #include "WidgetDisplayActor_Reload.generated.h"
 
 /**
@@ -14,5 +14,4 @@ class DANGEROUSRELOAD_API AWidgetDisplayActor_Reload : public AWidgetDisplayActo
 {
 	GENERATED_BODY()
 public:
-	virtual void DisplayUI(bool bEnabled) override;
 };

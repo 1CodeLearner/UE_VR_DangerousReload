@@ -143,7 +143,10 @@ void ADVRGameModeBase::OnMatchStateChanged(EMatchState CurrentMatchState)
 	case EMatchState::EMATCH_SwitchTurn:
 	{
 		if (VRGameState->IsCurrentTurn(Player) && Pistol->IsHeld())
+		{
 			DisplaySettingDownWeapon(true);
+			DisplayTurnAndPickup(true);
+		}
 		break;
 	}
 	case EMatchState::EMATCH_RoundReset:

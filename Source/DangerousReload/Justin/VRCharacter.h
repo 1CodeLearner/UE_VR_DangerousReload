@@ -25,6 +25,17 @@ class DANGEROUSRELOAD_API AVRCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
+
+	bool bIsGripping;
+
+	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
+	TObjectPtr<USkeletalMeshComponent>  LHandSKMComp;
+	
+	//Gameplay Components
+	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
+	TObjectPtr<UVRHealthComponent> HealthComp;
+
+
 	// Sets default values for this character's properties
 	AVRCharacter();
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
@@ -63,9 +74,6 @@ protected:
 
 	//LeftHand
 
-	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
-	TObjectPtr<USkeletalMeshComponent>  LHandSKMComp;
-
 	//Inputs
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Input")
 	TObjectPtr<UInputMappingContext> IMC_VRCharacter;
@@ -103,9 +111,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Input")
 	TObjectPtr<UInputAction> IA_LThumbTouch;
 
-	//Gameplay Components
-	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
-	TObjectPtr<UVRHealthComponent> HealthComp;
 
 
 
@@ -153,7 +158,6 @@ protected:
 
 
 private:
-	bool bIsGripping;
 
 	UPROPERTY()
 	AActor* RInteractingActor;
