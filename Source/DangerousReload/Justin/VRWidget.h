@@ -13,6 +13,7 @@ UCLASS()
 class DANGEROUSRELOAD_API UVRWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
 
+public:
+	void Display(bool bEnabled);
 };

@@ -173,6 +173,8 @@ void ADVRGameModeBase::DisplayAmmoCount(bool bEnable)
 {
 	//Display Ammo count.
 	//With UI or on the table in game
+
+
 }
 
 void ADVRGameModeBase::DisplayTurnAndPickup(bool bEnable)
@@ -304,6 +306,8 @@ void ADVRGameModeBase::OnDropped()
 void ADVRGameModeBase::OnFired(AActor* ActorInstigator, AActor* ActorAimed, bool bIsLiveRound)
 {
 	UVRHealthComponent* HealthComp = ActorAimed->GetComponentByClass<UVRHealthComponent>();
+	bool bPlayerHit = false;
+
 	//Handle Health
 	if (bIsLiveRound)
 	{
@@ -312,11 +316,13 @@ void ADVRGameModeBase::OnFired(AActor* ActorInstigator, AActor* ActorAimed, bool
 			HealthComp->InflictDamage();
 			HealthComp->OnHealthChanged.Broadcast(true, HealthComp->GetMaxHealth());
 
-			ACharacter* CharacterHit = Cast<ACharacter>(ActorAimed);
-			ACharacter* EnemyHit = Cast<ACEnemy>(ActorAimed);
+			AVRCharacter* CharacterHit = Cast<AVRCharacter>(ActorAimed);
+			ACEnemy* EnemyHit = Cast<ACEnemy>(ActorAimed);
+
 			if (CharacterHit)
 			{
 				ChangeLifeLightColor(CharacterHit, FLinearColor::Red);
+				bPlayerHit = true;
 			}
 			else if (EnemyHit)
 			{
@@ -327,27 +333,29 @@ void ADVRGameModeBase::OnFired(AActor* ActorInstigator, AActor* ActorAimed, bool
 
 	if (HealthComp->IsDead())
 	{
-		if (HealthComp->GetOwner() == Cast<AActor>(Player))
+		if (bPlayerHit)
 		{
-			if (IsFinalStage())
+			PreSwitchingState(EMatchState::EMATCH_GameOver);
+			/*if (IsFinalStage())
 			{
 				PreSwitchingState(EMatchState::EMATCH_GameOver);
 			}
 			else
 			{
 				PreSwitchingState(EMatchState::EMATCH_StageLost);
-			}
+			}*/
 		}
 		else
 		{
-			if (IsFinalStage())
+			PreSwitchingState(EMatchState::EMATCH_GameClear);
+			/*if (IsFinalStage())
 			{
 				PreSwitchingState(EMatchState::EMATCH_GameClear);
 			}
 			else
 			{
 				PreSwitchingState(EMatchState::EMATCH_StageClear);
-			}
+			}*/
 		}
 	}
 	else if (Pistol->IsEmpty())
@@ -393,7 +401,7 @@ void ADVRGameModeBase::ChangeLifeLightColor(ACharacter* target, FLinearColor col
 {
 	if (Cast<AVRCharacter>(target) != nullptr) {
 		for (int32 i = 0; i < playerLifeSpotlight.Num(); i++) {
-			if (playerLifeSpotlight[i] !=nullptr && playerLifeSpotlight[i]->spotLight->GetLightColor() == color) continue;
+			if (playerLifeSpotlight[i] != nullptr && playerLifeSpotlight[i]->spotLight->GetLightColor() == color) continue;
 			else
 			{
 				playerLifeSpotlight[i]->spotLight->SetLightColor(color);
