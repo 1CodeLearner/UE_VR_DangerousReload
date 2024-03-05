@@ -10,6 +10,7 @@
 #include "EngineUtils.h"
 #include "../VRGameStateBase.h"
 #include "../Justin/VRCharacter.h"
+#include "CHealthItem.h"
 
 // Sets default values
 ACEnemy::ACEnemy()
@@ -137,18 +138,35 @@ void ACEnemy::Tick(float DeltaTime)
 			}
 			return;
 		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("I can't drop the gun"));
-			return;
-		}
 	}
 
 	// Enemy turn
-	if (VRGameState->IsCurrentTurn(this)) {
-		if (HealthComp->GetMaxHealth() < 4)
+	if (VRGameState->IsCurrentTurn(this) && !Cast<AVRCharacter>(player)->bIsGripping) {
+		TArray<ACHealthItem*> items;
+		for (TActorIterator<ACHealthItem> it(GetWorld()); it; ++it)
 		{
-			// use life item during life == 4 or all life item
+			items.Add(*it);
+		}
+		if (HealthComp->GetMaxHealth() < 4 && items[0] != nullptr && bIsShot == false)
+		{
+			if (healthItem == nullptr) {
+				for (int32 i = 0; i < items.Num(); ++i) {
+					if (FVector::Distance(GetActorLocation(), items[i]->GetActorLocation()) < 300)
+					{
+						healthItem = items[i];
+						break;
+					}
+				}
+			}
+			else {
+				rightComp->SetWorldLocation(rightComp->GetComponentLocation() + (healthItem->GetActorLocation() - rightComp->GetComponentLocation()).GetSafeNormal());
+				if (FVector::Distance(rightComp->GetComponentLocation(), healthItem->GetActorLocation()) < 30) {
+					healthItem->OnPickup(this);
+					healthItem->OnInteract(this);
+					healthItem = nullptr;
+				}
+				return;
+			}
 		}
 
 		/*float trueBulletCount = gun->GetRemainingRounds() - gun->GetLiveRounds();
@@ -209,10 +227,9 @@ void ACEnemy::Tick(float DeltaTime)
 	else if (VRGameState->IsCurrentTurn(player))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PlayerTurn"));
-		bIsShot = false;
 		//gun release
 		TArray<AActor*> isChild;
-		if (rightComp->GetChildComponent(0))
+		if (rightComp->GetChildComponent(0) || rightComp->GetChildComponent(1))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("I Have Gun"));
 			rightComp->SetWorldLocation(rightComp->GetComponentLocation() + (player->GetActorLocation() + FVector::ForwardVector * 100 - rightComp->GetComponentLocation()).GetSafeNormal());
@@ -222,6 +239,7 @@ void ACEnemy::Tick(float DeltaTime)
 				rightComp->SetRelativeLocation(FVector(70, 20, -10));
 				rightComp->SetRelativeRotation(FRotator(0, -90, 0));
 				currentObject = nullptr;
+				bIsShot = false;
 			}
 			return;
 		}
@@ -310,6 +328,7 @@ void ACEnemy::MoveToGun()
 			{
 				currentObject = gun;
 				currentObject->OnPickup(this);
+				bIsShot = false;
 			}
 		}
 	}

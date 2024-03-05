@@ -35,6 +35,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
 	TObjectPtr<USkeletalMeshComponent>  RHandSKMComp;
 	
+	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
+	TObjectPtr<USkeletalMeshComponent>  LHandSKMComp;
+
 	UPROPERTY(VisibleAnywhere, Category = "VRSettings | Components")
 	UTextRenderComponent* LTextComp;
 
@@ -60,10 +63,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
 	TObjectPtr<USphereComponent> RCollisionComp;
 
-	//LeftHand
-
-	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Components")
-	TObjectPtr<USkeletalMeshComponent>  LHandSKMComp;
 
 	//Inputs
 	UPROPERTY(EditDefaultsOnly, Category = "VRSettings | Input")
@@ -92,6 +91,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	bool bIsGripping;
 protected:
 	UFUNCTION()
 	void OnRightGrip(const FInputActionValue& Value);
@@ -105,7 +105,6 @@ protected:
 
 
 private:
-	bool bIsGripping;
 	UPROPERTY()
 	AActor* RInteractingActor;
 

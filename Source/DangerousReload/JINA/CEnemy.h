@@ -60,6 +60,7 @@ public:
 	FTimerHandle timerHandle;
 	bool bTimerRun = false;
 	float trueBulletCount;
+	class ACHealthItem* healthItem;
 
 	UPROPERTY(VisibleAnywhere, Category = "MySettings")
 	class UVRHealthComponent* HealthComp;
