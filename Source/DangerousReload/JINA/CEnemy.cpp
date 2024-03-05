@@ -9,6 +9,7 @@
 #include "../Justin/VRHealthComponent.h"
 #include "EngineUtils.h"
 #include "../VRGameStateBase.h"
+#include "../Justin/VRCharacter.h"
 
 // Sets default values
 ACEnemy::ACEnemy()
@@ -102,6 +103,7 @@ void ACEnemy::BeginPlay()
 
 	faceLocation = meshComp->GetRelativeLocation();
 	life = HealthComp->GetMaxHealth();
+	VRGameState->OnMatchStateChanged.AddUObject(this, &ACEnemy::OnMatchStateChanged);
 }
 
 // Called every frame
@@ -115,8 +117,31 @@ void ACEnemy::Tick(float DeltaTime)
 	// face return
 	if (meshComp->GetRelativeLocation().X < faceLocation.X) {
 		UE_LOG(LogTemp, Warning, TEXT("Return To Face"));
-		meshComp->SetRelativeLocation(meshComp->GetRelativeLocation() + FVector(1, 0, 0));
+		meshComp->SetRelativeLocation(meshComp->GetRelativeLocation() + FVector(10, 0, 0));
 		return;
+	}
+
+	// round change
+	if (gun->IsEmpty())
+	{
+		if (currentObject != nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("I Have Gun"));
+			rightComp->SetWorldLocation(rightComp->GetComponentLocation() + (player->GetActorLocation() + FVector::ForwardVector * 100 - rightComp->GetComponentLocation()).GetSafeNormal());
+			if (FVector::Distance(player->GetActorLocation(), rightComp->GetComponentLocation()) < 200)
+			{
+				gun->OnRelease(this);
+				rightComp->SetRelativeLocation(FVector(70, 20, -10));
+				rightComp->SetRelativeRotation(FRotator(0, -90, 0));
+				currentObject = nullptr;
+			}
+			return;
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("I can't drop the gun"));
+			return;
+		}
 	}
 
 	// Enemy turn
@@ -126,9 +151,14 @@ void ACEnemy::Tick(float DeltaTime)
 			// use life item during life == 4 or all life item
 		}
 
-		float fakeBulletCount = gun->GetTotalRounds() - gun->GetLiveRounds();
-		float succeedPercent = fakeBulletCount / gun->GetRemainingRounds() * 100.f;
-		if (succeedPercent >= 70)
+		/*float trueBulletCount = gun->GetRemainingRounds() - gun->GetLiveRounds();
+		float enemylife = HealthComp->GetMaxHealth() - 4;
+		AVRCharacter* castPlayer = Cast<AVRCharacter>(player);
+		float playerlife = castPlayer->HealthComp->GetMaxHealth() - 4;
+		trueBulletCount = trueBulletCount - playerlife - enemylife;*/
+
+		float failedPercent = trueBulletCount / gun->GetRemainingRounds() * 100.f;
+		if (failedPercent <= 20)
 		{
 			// shoot to me
 			if (bIsShot == true) {
@@ -138,7 +168,7 @@ void ACEnemy::Tick(float DeltaTime)
 						{
 							bIsShot = false;
 							bTimerRun = false;
-						}), 5.0f, false);
+						}), 1.5f, false);
 				}
 				else return;
 			}
@@ -179,6 +209,7 @@ void ACEnemy::Tick(float DeltaTime)
 	else if (VRGameState->IsCurrentTurn(player))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PlayerTurn"));
+		bIsShot = false;
 		//gun release
 		TArray<AActor*> isChild;
 		if (rightComp->GetChildComponent(0))
@@ -195,22 +226,7 @@ void ACEnemy::Tick(float DeltaTime)
 			return;
 		}
 		// if succeed
-		if (HealthComp->GetMaxHealth() != life) {
-			int32 gap = life - HealthComp->GetMaxHealth();
-			if (gap > 0)
-			{
-				for (int32 i = 0; i < gap; ++i) {
-					OnHealthChanged(true, HealthComp->GetMaxHealth());
-				}
-			}
-			else
-			{
-				for (int32 i = 0; i > gap; --i) {
-					OnHealthChanged(true, HealthComp->GetMaxHealth());
-				}
-			}
-			life = HealthComp->GetMaxHealth();
-		}
+		
 		// if fail
 		//
 
@@ -222,6 +238,10 @@ void ACEnemy::Tick(float DeltaTime)
 		//	fakeBulletCount -= 1;
 		//	gameMode->isPlayerTurn = false;
 		//}
+	}
+	if (HealthComp->GetMaxHealth() != life) {
+		OnHealthChanged(true, HealthComp->GetMaxHealth());
+		life = HealthComp->GetMaxHealth();
 	}
 }
 
@@ -239,10 +259,16 @@ void ACEnemy::OnMatchStateChanged(EMatchState MatchState)
 	{
 	case EMatchState::EMATCH_Start:
 	{
+		trueBulletCount = gun->GetLiveRounds();
 		break;
 	}
 	case EMatchState::EMATCH_SwitchTurn:
 	{
+		break;
+	}
+	case EMatchState::EMATCH_RoundReset:
+	{
+		trueBulletCount = gun->GetLiveRounds();
 		break;
 	}
 	//etc.
@@ -337,7 +363,7 @@ void ACEnemy::OnHealthChanged(bool bDamaged, int HealthRemaining)
 	UE_LOG(LogTemp, Warning, TEXT("%s: Health Changed"), *GetNameSafe(this));
 	if (bDamaged) {
 		meshComp->SetRelativeLocation(meshComp->GetRelativeLocation() - FVector(500, 0, 0));
-		//currBulletCount -= 1;
+		trueBulletCount -= 1;
 		if (HealthComp->IsDead())
 		{
 			OnDead();

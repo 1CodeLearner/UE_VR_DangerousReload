@@ -170,12 +170,12 @@ void AVRInteractableActor_Pistol::Reload()
 		}
 		case 1:
 		{
-			liveRounds++;
+			++liveRounds;
 			break;
 		}
 		case 2:
 		{
-			liveRounds--;
+			--liveRounds;
 			break;
 		}
 		}
