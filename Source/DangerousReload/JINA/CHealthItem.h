@@ -16,11 +16,18 @@ class DANGEROUSRELOAD_API ACHealthItem : public AVRInteractableActor
 	
 	ACHealthItem();
 
+public:
+	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+	virtual void OnPickup(AActor* InstigatorA) override;
 	virtual void OnInteract(AActor* InstigatorA) override;
+	virtual void OnRelease(AActor* InstigatorA) override;
 
 public:
-	UStaticMeshComponent* btnComp;
-	class AVRPlayer* player;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USkeletalMeshComponent* btnComp;
+	class AVRCharacter* player;
 	class ACEnemy* enemy;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<UParticleSystem> btnEffect;
 };
