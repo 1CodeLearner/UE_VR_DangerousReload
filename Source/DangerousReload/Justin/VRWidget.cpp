@@ -5,8 +5,13 @@
 
 void UVRWidget::Display(bool bEnabled)
 {
-	if (bEnabled)
+
+	if (bEnabled) 
+	{
 		SetVisibility(ESlateVisibility::Visible);
-	else
+	}
+	else {
 		SetVisibility(ESlateVisibility::Collapsed);
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Magenta, FString::Printf(TEXT("Output %s"), bEnabled ? TEXT("Success") : TEXT("fail")), false);
 }

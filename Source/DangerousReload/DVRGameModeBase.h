@@ -18,6 +18,9 @@ class AVRCharacter;
 class ACEnemy;
 class AVRInteractableActor;
 class AVRInteractableActor_Pistol;
+class AWidgetDisplay_AmmoCount;
+class AWidgetDisplayActor_ButtonPress;
+class AWidgetDisplayActor_Turns;
 
 USTRUCT(BlueprintType)
 struct FRound : public FTableRowBase
@@ -85,6 +88,9 @@ private:
 	//Game flow control
 	void OnMatchStateChanged(EMatchState CurrentMatchState);
 
+	//Changes from Main state to Start state
+	friend class AVRButtonActor;
+
 	//Invokes PreSwitchingState after certain duration
 	void SwitchStateOnTimer(EMatchState MatchState, float InRate);
 	//Setups before switching Match State
@@ -97,8 +103,11 @@ private:
 
 	//UI
 	void DisplayButtonPress(bool bEnable);
+	TObjectPtr<AWidgetDisplayActor_ButtonPress> ButtonPressWidgetActor;
 	void DisplayAmmoCount(bool bEnable);
+	TObjectPtr<AWidgetDisplay_AmmoCount> AmmoCountWidgetActor;
 	void DisplayTurnAndPickup(bool bEnable);
+	TObjectPtr<AWidgetDisplayActor_Turns> TurnsWidgetActor;
 	void DisplaySettingDownWeapon(bool bEnable);
 	void DisplayRackingWeapon(bool bEnable);
 

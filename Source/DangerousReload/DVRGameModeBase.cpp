@@ -10,6 +10,9 @@
 #include "Justin/VRInteractables/VRInteractableActor_Pistol.h"
 #include "VRGameStateBase.h"
 #include <Components/SpotLightComponent.h>
+#include "Justin/WidgetDisplay_AmmoCount.h"
+#include "Justin/WorldUI/WidgetDisplayActor_ButtonPress.h"
+#include "Justin/WorldUI/WidgetDisplayActor_Turns.h"
 
 ADVRGameModeBase::ADVRGameModeBase()
 {
@@ -42,6 +45,24 @@ void ADVRGameModeBase::InitGame(const FString& MapName, const FString& Options, 
 		{
 			Pistol = *Iter;
 		}
+	}
+
+	for (TActorIterator<AWidgetDisplay_AmmoCount> Iter(GetWorld()); Iter; ++Iter)
+	{
+		AmmoCountWidgetActor = *Iter;
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Magenta, FString::Printf(TEXT("Success %s"), *GetNameSafe(AmmoCountWidgetActor)), false);
+	}
+
+	for (TActorIterator<AWidgetDisplayActor_ButtonPress> Iter(GetWorld()); Iter; ++Iter)
+	{
+		ButtonPressWidgetActor = *Iter;
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Magenta, FString::Printf(TEXT("Success %s"), *GetNameSafe(ButtonPressWidgetActor)), false);
+	}
+
+	for (TActorIterator<AWidgetDisplayActor_Turns> Iter(GetWorld()); Iter; ++Iter)
+	{
+		TurnsWidgetActor = *Iter;
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Magenta, FString::Printf(TEXT("Success %s"), *GetNameSafe(TurnsWidgetActor)), false);
 	}
 }
 
@@ -95,6 +116,7 @@ void ADVRGameModeBase::OnMatchStateChanged(EMatchState CurrentMatchState)
 		/*
 		*1. Turn off player and enemy Life Lights
 		*/
+		DisplayButtonPress(true);
 		break;
 	}
 	case EMatchState::EMATCH_Start:
@@ -167,19 +189,19 @@ void ADVRGameModeBase::OnMatchStateChanged(EMatchState CurrentMatchState)
 
 void ADVRGameModeBase::DisplayButtonPress(bool bEnable)
 {
+	ButtonPressWidgetActor->DisplayUI(bEnable);
 }
 
 void ADVRGameModeBase::DisplayAmmoCount(bool bEnable)
 {
 	//Display Ammo count.
 	//With UI or on the table in game
-
-
+	AmmoCountWidgetActor->DisplayUI(bEnable);
 }
 
 void ADVRGameModeBase::DisplayTurnAndPickup(bool bEnable)
 {
-	//Display turns and pickup indicator UI
+	TurnsWidgetActor->DisplayUI(bEnable);
 }
 
 void ADVRGameModeBase::DisplaySettingDownWeapon(bool bEnable)
@@ -209,10 +231,12 @@ void ADVRGameModeBase::PreSwitchingState(EMatchState MatchState)
 	}
 	case EMatchState::EMATCH_Start:
 	{
+		DisplayButtonPress(false);
 		break;
 	}
 	case EMatchState::EMATCH_OnGoing:
 	{
+		DisplayAmmoCount(false);
 		break;
 	}
 	case EMatchState::EMATCH_SwitchTurn:

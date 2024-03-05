@@ -16,7 +16,7 @@ class DANGEROUSRELOAD_API AWidgetDisplay_AmmoCount : public AWidgetDisplayActor
 {
 	GENERATED_BODY()
 public:
-	virtual void Display(bool bEnabled) override; 
+	virtual void DisplayUI(bool bEnabled) override; 
 protected:
 	virtual void BeginPlay() override;
 

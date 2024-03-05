@@ -9,6 +9,7 @@
 class AVRGameStateBase;
 enum class EMatchState : uint8;
 class USkeletalMeshComponent;
+class ADVRGameModeBase;
 
 UCLASS()
 class DANGEROUSRELOAD_API AVRButtonActor : public AActor
@@ -33,6 +34,9 @@ protected:
 private:
 	UPROPERTY()
 	TObjectPtr<AVRGameStateBase> VRGameState;
+
+	UPROPERTY()
+	TObjectPtr<ADVRGameModeBase> VRGameMode;
 
 	void OnMatchStateChanged(EMatchState MatchState);
 	

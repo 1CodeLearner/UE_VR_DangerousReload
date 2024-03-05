@@ -16,7 +16,7 @@ class DANGEROUSRELOAD_API AWidgetDisplayActor : public AActor
 public:	
 	AWidgetDisplayActor();
 
-	virtual void Display(bool bEnabled);
+	virtual void DisplayUI(bool bEnabled);
 protected:
 	virtual void BeginPlay() override;
 

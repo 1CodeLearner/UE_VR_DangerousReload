@@ -11,7 +11,7 @@ AWidgetDisplayActor::AWidgetDisplayActor()
 	WidgetComp->SetupAttachment(RootComponent);
 }
 
-void AWidgetDisplayActor::Display(bool bEnabled)
+void AWidgetDisplayActor::DisplayUI(bool bEnabled)
 {
 	auto widget = WidgetComp->GetWidget();
 	if (widget)

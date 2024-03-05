@@ -4,6 +4,7 @@
 #include "VRButtonActor.h"
 #include "../../VRGameStateBase.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "../../DVRGameModeBase.h"
 
 
 AVRButtonActor::AVRButtonActor()
@@ -23,6 +24,8 @@ void AVRButtonActor::BeginPlay()
 	{
 		VRGameState->OnMatchStateChanged.AddUObject(this, &AVRButtonActor::OnMatchStateChanged);
 	}
+
+	VRGameMode = GetWorld()->GetAuthGameMode<ADVRGameModeBase>();
 }
 
 void AVRButtonActor::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -30,7 +33,7 @@ void AVRButtonActor::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AA
 	auto GameState = GetWorld()->GetGameState<AVRGameStateBase>();
 
 	if (GameState) {
-		GameState->ChangeMatchStateTo(MatchStateToChangeTo);
+		VRGameMode->PreSwitchingState(EMatchState::EMATCH_Start);
 		ButtonMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 }
