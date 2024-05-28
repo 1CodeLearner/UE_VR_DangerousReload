@@ -19,7 +19,7 @@ ACEnemy::ACEnemy()
 	PrimaryActorTick.bCanEverTick = true;
 
 	sphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Component"));
-	SetRootComponent(sphereComp);
+	sphereComp->SetupAttachment(RootComponent);
 	sphereComp->SetCollisionObjectType(ECC_GameTraceChannel3);
 
 	meshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Static Mesh Component"));
@@ -143,11 +143,12 @@ void ACEnemy::Tick(float DeltaTime)
 	// Enemy turn
 	if (VRGameState->IsCurrentTurn(this) && !Cast<AVRCharacter>(player)->bIsGripping) {
 		TArray<ACHealthItem*> items;
+		items.Empty();
 		for (TActorIterator<ACHealthItem> it(GetWorld()); it; ++it)
 		{
 			items.Add(*it);
 		}
-		if (HealthComp->GetMaxHealth() < 4 && items[0] != nullptr && bIsShot == false)
+		if (!items.IsEmpty() && HealthComp->GetMaxHealth() < 4 && bIsShot == false)
 		{
 			if (healthItem == nullptr) {
 				for (int32 i = 0; i < items.Num(); ++i) {
@@ -168,12 +169,6 @@ void ACEnemy::Tick(float DeltaTime)
 				return;
 			}
 		}
-
-		/*float trueBulletCount = gun->GetRemainingRounds() - gun->GetLiveRounds();
-		float enemylife = HealthComp->GetMaxHealth() - 4;
-		AVRCharacter* castPlayer = Cast<AVRCharacter>(player);
-		float playerlife = castPlayer->HealthComp->GetMaxHealth() - 4;
-		trueBulletCount = trueBulletCount - playerlife - enemylife;*/
 
 		float failedPercent = trueBulletCount / gun->GetRemainingRounds() * 100.f;
 		if (failedPercent <= 20)
@@ -217,10 +212,6 @@ void ACEnemy::Tick(float DeltaTime)
 			// else
 
 			Shoot(player);
-			//REMOVE THIS AFTER TESTING
-			//if (bIsShot == true) {
-			//	gameMode->isPlayerTurn = true;
-			//}
 		}
 	}
 	// player turn
@@ -295,30 +286,12 @@ void ACEnemy::OnMatchStateChanged(EMatchState MatchState)
 
 void ACEnemy::MoveToGun()
 {
-	if (gun != nullptr) rightComp->SetWorldLocation(rightComp->GetComponentLocation() + (gun->GetActorLocation() - rightComp->GetComponentLocation()).GetSafeNormal());
+	if (gun != nullptr) 
+	rightComp->SetWorldLocation(
+	rightComp->GetComponentLocation() + 
+	(gun->GetActorLocation() - rightComp->GetComponentLocation()).GetSafeNormal() * 4.f);
+	
 	if (gun != nullptr) {
-		//FHitResult hitInfo;
-		//FVector pos = rightComp->GetComponentLocation();
-		//FCollisionObjectQueryParams objectParams;
-		//objectParams.AddObjectTypesToQuery(ECollisionChannel::ECC_GameTraceChannel1);
-		//FCollisionQueryParams params;
-		//params.AddIgnoredActor(this);
-		////params.AddIgnoredActor(table);
-
-		//bool bChecked = GetWorld()->SweepSingleByObjectType(hitInfo, pos, pos, FQuat::Identity, objectParams, FCollisionShape::MakeSphere(20), params);
-		//DrawDebugSphere(GetWorld(), pos, 20, 10, FColor::Red);
-		//GEngine->AddOnScreenDebugMessage(-1, 0.1f, FColor::Red, FString::Printf(TEXT("bcheck: %d"), bChecked));
-		//if (bChecked) {
-		//	UE_LOG(LogTemp, Warning, TEXT("33333333333333333333333"));
-
-		//	currentObject = Cast<AVRInteractableActor_Pistol>(hitInfo.GetActor());
-		//	if (currentObject != nullptr)
-		//	{
-		//		//FAttachmentTransformRules attachRules = FAttachmentTransformRules::SnapToTargetNotIncludingScale;
-
-		//		//AttachToComponent(rightComp, attachRules, FName("Gun"));
-		//		currentObject->OnPickup(this);
-		//	}
 		FVector gunPos = gun->GetActorLocation();
 		FVector handPos = rightComp->GetComponentLocation();
 
@@ -341,7 +314,7 @@ void ACEnemy::ReturnToBody(ACharacter* target)
 		ShotGun(target);
 	}
 	else {
-		rightComp->SetWorldLocation(rightComp->GetComponentLocation() + (this->GetActorLocation() + FVector(70, 20, -10) - rightComp->GetComponentLocation()).GetSafeNormal());
+		rightComp->SetWorldLocation(rightComp->GetComponentLocation() + (this->GetActorLocation() + FVector(70, 20, -10) - rightComp->GetComponentLocation()).GetSafeNormal() * 3.f);
 	}
 }
 

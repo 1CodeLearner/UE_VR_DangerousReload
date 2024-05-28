@@ -129,7 +129,7 @@ void ADVRGameModeBase::OnMatchStateChanged(EMatchState CurrentMatchState)
 		Pistol->Reload();
 		VRGameState->SetCurrentTurn(Player);
 		DisplayAmmoCount(true);
-		SwitchStateOnTimer(EMatchState::EMATCH_OnGoing, 2.f);
+		SwitchStateOnTimer(EMatchState::EMATCH_OnGoing, 6.f);
 		break;
 	}
 	case EMatchState::EMATCH_OnGoing:

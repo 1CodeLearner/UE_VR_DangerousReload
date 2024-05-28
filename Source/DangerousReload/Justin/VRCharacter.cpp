@@ -95,7 +95,7 @@ void AVRCharacter::BeginPlay()
 		}
 	}
 
-	UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Eye);
+	UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Floor);
 
 	HealthComp->OnHealthChanged.AddUObject(this, &AVRCharacter::OnHealthChange);
 	HealthComp->OnDead.AddUObject(this, &AVRCharacter::OnDead);
